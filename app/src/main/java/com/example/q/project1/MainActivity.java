@@ -16,6 +16,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
+
+
+
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -62,9 +65,6 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
-        // Contacts
-//        mListView = (ListView) findViewById(R.id.contacts_list_view);
     }
 
 
