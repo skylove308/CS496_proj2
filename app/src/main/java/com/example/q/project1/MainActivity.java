@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Contacts
-        mListView = (ListView) findViewById(R.id.contacts_list_view);
+//        mListView = (ListView) findViewById(R.id.contacts_list_view);
     }
 
 
