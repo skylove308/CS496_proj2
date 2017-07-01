@@ -14,8 +14,6 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 
-
-
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -54,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
