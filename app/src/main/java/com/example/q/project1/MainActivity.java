@@ -94,9 +94,9 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     Tab2Gallery tab2 = new Tab2Gallery();
                     return tab2;
-//                case 2:
-//                    Tab3Online tab3 = new Tab3Online();
-//                    return tab3;
+                case 2:
+                    Tab3Online tab3 = new Tab3Online();
+                    return tab3;
             }
             return null;
         }
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 2 total pages.
-            return 2;
+            return 3;
         }
 
         @Override
@@ -114,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
                     return "CONTACTS";
                 case 1:
                     return "GALLERY";
-//                case 2:
-//                    return "SECTION 3";
+                case 2:
+                    return "SECTION 3";
             }
             return null;
         }
