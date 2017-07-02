@@ -1,7 +1,6 @@
 package com.example.q.project1;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -11,20 +10,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -42,79 +37,113 @@ import java.util.List;
 
 public class Tab1Contacts extends Fragment {
 
-    public final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+    /* ---------------- */
+    /* MACROS & GLOBALS */
+    /* ---------------- */
 
+    /* macros */
+    public final int MY_PERMISSIONS_REQUEST = 1;
+    public final int EDIT_CONTACT_ACTIVITY_CODE = 1;
+
+    /* global variables */
     private int currentIndex = -1;
     private SlidingUpPanelLayout mLayout;
     List<HashMap<String,String>> contactList = new ArrayList<HashMap<String,String>>();
+
+
+    /* -------------- */
+    /* MAIN FUNCTIONS */
+    /* -------------- */
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab1contacts, container, false);
 
+        /* initialize SlidingUpPanelLayout settings */
         mLayout = (SlidingUpPanelLayout) rootView.findViewById(R.id.sliding_layout);
         mLayout.setTouchEnabled(false);
 
-        askForContactPermission();
-        initList();
+        /* initialize contactList from contacts.json and from phone contacts */
+        askForPermissions();
+        contactList.clear();
+        getContactsFromPhone();
+        getContactsFromJSON();
+
+        /* sort list now that contactList is done */
         sortList();
+
+        /* listener for ListView - invokes SlidingUpPanelLayout */
         ListView listview = (ListView) rootView.findViewById(R.id.contacts_listview);
+        listview.setOnItemClickListener(listviewListener);
 
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapter, View v, int position, long id){
-                int height = mLayout.getPanelHeight();
-                if (currentIndex != position || height == 0) {
-                    mLayout.setPanelHeight(130);
-                    currentIndex = position;
-                } else {
-                    mLayout.setPanelHeight(0);
-                }
-            }
-        });
-
+        /* adapter for ListView */
         SimpleAdapter simpleAdapter = new SimpleAdapter(
                 getActivity(), contactList, android.R.layout.simple_list_item_2,
-                new String[] {"name", "number"},
-                new int[] {android.R.id.text1, android.R.id.text2}
+                new String[]{"name", "number"}, new int[]{android.R.id.text1, android.R.id.text2}
         );
         listview.setAdapter(simpleAdapter);
 
-//        FloatingActionButton fab_add = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
-//        fab_add.setOnClickListener(add_listener);
+        /* listener for call button */
+        Button callButton = (Button) rootView.findViewById(R.id.callButton);
+        callButton.setOnClickListener(callButtonListener);
 
-//        FragmentTransaction ft =  getActivity().getSupportFragmentManager().beginTransaction();
-//        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-//        AddContactActivity fr = new AddContactActivity();
-//        Bundle bundle = new Bundle();
-//        bundle.putSerializable("contacts", cs);
-//        fr.setArguments(bundle);
-//        ft.replace(android.R.id.content, fr);
-//        ft.addToBackStack(null);
-//        ft.commit();
+        /* listener for edit button */
+        Button editButton = (Button) rootView.findViewById(R.id.editButton);
+        editButton.setOnClickListener(editButtonListener);
+
         return rootView;
     }
 
-    public void askForContactPermission() {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        /* runs after returning from EditContactActivity */
+        if (requestCode == EDIT_CONTACT_ACTIVITY_CODE) {
+
+            int editIndex = data.getIntExtra("index", -1);
+
+            if (resultCode == Activity.RESULT_OK && editIndex != -1) {
+                String editName = data.getStringExtra("newName");
+                String editNumber = data.getStringExtra("newNumber");
+                contactList.get(editIndex).put("name", formatName(editName));
+                contactList.get(editIndex).put("number", formatNumber(editNumber));
+            }
+        }
+    }
+
+
+    /* ---------------- */
+    /* HELPER FUNCTIONS */
+    /* ---------------- */
+
+    /* FUNCTION: requests CALL_PHONE and READ_CONTACTS permissions */
+    public void askForPermissions() {
+
+        /* CALL PHONE */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        getActivity(),
+                        new String[]{Manifest.permission.CALL_PHONE},
+                        MY_PERMISSIONS_REQUEST
+                );
+            }
+        }
+
+        /* READ_ CONTACTS */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(
                         getActivity(),
                         new String[]{Manifest.permission.READ_CONTACTS},
-                        MY_PERMISSIONS_REQUEST_READ_CONTACTS
+                        MY_PERMISSIONS_REQUEST
                 );
-            } else {
-                getContacts();
             }
-        } else{
-            getContacts();
         }
     }
 
-    public void getContacts() {
-        /* Called here instead of initList because this comes first */
-        contactList.clear();
-
+    /* FUNCTION: reads phone contacts */
+    public void getContactsFromPhone() {
         String phoneNumber = null;
         ContentResolver contentResolver = getContext().getContentResolver();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null,null, null, null);
@@ -125,30 +154,23 @@ public class Tab1Contacts extends Fragment {
                 String name = cursor.getString(cursor.getColumnIndex( ContactsContract.Contacts.DISPLAY_NAME ));
                 int hasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex( ContactsContract.Contacts.HAS_PHONE_NUMBER )));
                 if (hasPhoneNumber > 0) {
-                    Cursor phoneCursor = contentResolver.query( ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[] { contact_id }, null);
+                    Cursor phoneCursor = contentResolver.query( ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[] { contact_id }, null
+                    );
                     while (phoneCursor.moveToNext()) {
                         phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        break;
+                        break; // only read first phone number
                     }
                     phoneCursor.close();
                 }
                 contactList.add(createContact(name, phoneNumber));
             }
         }
-
         cursor.close();
     }
 
-
-    View.OnClickListener add_listener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Intent ni = new Intent(getContext(), AddContactActivity.class);
-            startActivity(ni);
-        }
-    };
-
-    private void initList() {
+    /* FUNCTION: Read contacts from contacts.json */
+    private void getContactsFromJSON() {
         try {
             JSONObject jsonResponse = new JSONObject(loadJSONFromAsset("contacts.json"));
             JSONArray jsonMainNode = jsonResponse.optJSONArray("contacts");
@@ -159,11 +181,10 @@ public class Tab1Contacts extends Fragment {
                 String number = jsonChildNode.optString("number");
                 contactList.add(createContact(name, number));
             }
-        } catch (JSONException e) {
-            // TODO
-        }
+        } catch (JSONException e) {}
     }
 
+    /* FUNCTION: sort contactList */
     private void sortList() {
         Collections.sort(contactList, new Comparator<HashMap<String, String>>() {
             public int compare(HashMap<String, String> one, HashMap<String, String> two) {
@@ -172,6 +193,7 @@ public class Tab1Contacts extends Fragment {
         });
     }
 
+    /* FUNCTION: convert JSON file content to string */
     public String loadJSONFromAsset(String source) {
         String json = null;
         try {
@@ -188,22 +210,25 @@ public class Tab1Contacts extends Fragment {
         return json;
     }
 
+    /* FUNCTION: creat a contact instance given name and number */
     private HashMap<String, String> createContact(String name, String number) {
         HashMap<String, String> contactItem = new HashMap<String, String>();
-        String formattedName = convertName(name);
-        String formattedNumber = convertNumber(number);
+        String formattedName = formatName(name);
+        String formattedNumber = formatNumber(number);
         contactItem.put("name", formattedName);
         contactItem.put("number", formattedNumber);
         return contactItem;
     }
 
-    private String convertName(String name) {
+    /* FUNCTION: format name such that last name comes first */
+    private String formatName(String name) {
         String[] tokens = name.split("[ ]+");
         String result = tokens[1] + ", " + tokens[0];
         return result;
     }
 
-    private String convertNumber(String number) {
+    /* FUNCTION: format number with dashes */
+    private String formatNumber(String number) {
         if (number.length() == 11) {
             String result = number.substring(0, 3) + "-" + number.substring(3, 7) + "-" + number.substring(7, 11);
             return result;
@@ -211,4 +236,50 @@ public class Tab1Contacts extends Fragment {
             return number;
         }
     }
+
+
+    /* --------- */
+    /* LISTENERS */
+    /* --------- */
+
+    /* LISTENER: clicking listview element invokes SlidingUpPanelLayout */
+    AdapterView.OnItemClickListener listviewListener = new AdapterView.OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> adapter, View v, int position, long id) {
+            int height = mLayout.getPanelHeight();
+            if (currentIndex != position || height == 0) {
+                mLayout.setPanelHeight(130);
+                currentIndex = position;
+            } else {
+                mLayout.setPanelHeight(0);
+            }
+        }
+    };
+
+    /* LISTENER: clicking call button invokes a phone call */
+    View.OnClickListener callButtonListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            String number = contactList.get(currentIndex).get("number");
+            callIntent.setData(Uri.parse("tel:" + number));
+            startActivity(callIntent);
+        }
+    };
+
+    /* LISTENER: clicking edit button invokes a EditContactActivity */
+    View.OnClickListener editButtonListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            Intent ni = new Intent(getContext(), EditContactActivity.class);
+            ni.putExtra("index", currentIndex);
+            ni.putExtra("name", contactList.get(currentIndex).get("name"));
+            ni.putExtra("number", contactList.get(currentIndex).get("number"));
+            startActivityForResult(ni, EDIT_CONTACT_ACTIVITY_CODE);
+        }
+    };
 }
