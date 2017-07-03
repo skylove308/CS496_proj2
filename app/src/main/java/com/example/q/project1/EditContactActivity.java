@@ -39,7 +39,7 @@ public class EditContactActivity extends AppCompatActivity {
         /* set EditText texts as previous values */
         EditText inputName = (EditText) findViewById(R.id.inputName);
         EditText inputNumber = (EditText) findViewById(R.id.inputNumber);
-        inputName.setText(unformatName(name));
+        inputName.setText(name); // removed unformatName
         inputNumber.setText(number.replaceAll("-", ""));
 
         /* listener for submit button */
@@ -87,7 +87,7 @@ public class EditContactActivity extends AppCompatActivity {
             String inputName = ((EditText) findViewById(R.id.inputName)).getText().toString();
             String inputNumber = ((EditText) findViewById(R.id.inputNumber)).getText().toString();
 
-            if (checkName(inputName) == false) {
+            if (inputName.length() == 0) {
                 Toast.makeText(getApplicationContext(), "Please input a valid name.", Toast.LENGTH_LONG).show();
                 return;
             }

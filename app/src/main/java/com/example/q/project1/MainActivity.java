@@ -1,6 +1,5 @@
 package com.example.q.project1;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                     Tab2Gallery tab2 = new Tab2Gallery();
                     return tab2;
                 case 2:
-                    Tab3Online tab3 = new Tab3Online();
+                    Tab3Game tab3 = new Tab3Game();
                     return tab3;
             }
             return null;
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     return "GALLERY";
                 case 2:
-                    return "SECTION 3";
+                    return "GAME";
             }
             return null;
         }

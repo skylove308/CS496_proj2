@@ -26,7 +26,7 @@
       "email": "rpflorence@somewhere.com"
     },
     {
-      "name": "Soonshin Yi",
+      "name": "홍길동",
       "number": "01099997676",
       "email": "sebmarkbage@here.com"
     },
@@ -43,6 +43,16 @@
     {
       "name": "Katy Perry",
       "number": "01033334444",
+      "email": "floydophone@somewhere.com"
+    },
+    {
+      "name": "김삼사",
+      "number": "01033334444",
+      "email": "floydophone@somewhere.com"
+    },
+    {
+      "name": "이육칠",
+      "number": "01066667777",
       "email": "floydophone@somewhere.com"
     }
   ]

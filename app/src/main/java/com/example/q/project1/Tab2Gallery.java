@@ -154,7 +154,7 @@ public class Tab2Gallery extends Fragment {
 //            imageview.setScaleType(ImageView.ScaleType.CENTER_CROP);
 //            imageview.setPadding(10, 10, 10, 10);
 //
-//            imageview.setImageResource(pictureID[position]);
+//            imageview.setImageResource(colors[position]);
 //            return imageview;
 //        }
 

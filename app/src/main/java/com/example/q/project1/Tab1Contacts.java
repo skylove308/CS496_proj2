@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,6 +48,7 @@ public class Tab1Contacts extends Fragment {
 
     /* global variables */
     private int currentIndex = -1;
+    private View currentView;
     private SlidingUpPanelLayout mLayout;
     List<HashMap<String,String>> contactList = new ArrayList<HashMap<String,String>>();
 
@@ -64,9 +66,7 @@ public class Tab1Contacts extends Fragment {
         mLayout.setTouchEnabled(false);
 
         /* initialize contactList from contacts.json and from phone contacts */
-        askForPermissions();
-        contactList.clear();
-        getContactsFromPhone();
+        askForPermissions(); // this calls getContactsFromPhone
         getContactsFromJSON();
 
         /* sort list now that contactList is done */
@@ -105,7 +105,7 @@ public class Tab1Contacts extends Fragment {
             if (resultCode == Activity.RESULT_OK && editIndex != -1) {
                 String editName = data.getStringExtra("newName");
                 String editNumber = data.getStringExtra("newNumber");
-                contactList.get(editIndex).put("name", formatName(editName));
+                contactList.get(editIndex).put("name", editName); // unformatted name for Korean
                 contactList.get(editIndex).put("number", formatNumber(editNumber));
             }
         }
@@ -138,12 +138,17 @@ public class Tab1Contacts extends Fragment {
                         new String[]{Manifest.permission.READ_CONTACTS},
                         MY_PERMISSIONS_REQUEST
                 );
+            } else {
+                getContactsFromPhone();
             }
+        } else {
+            getContactsFromPhone();
         }
     }
 
     /* FUNCTION: reads phone contacts */
     public void getContactsFromPhone() {
+        contactList.clear(); // called here since this function is called before getContactsFromJSON
         String phoneNumber = null;
         ContentResolver contentResolver = getContext().getContentResolver();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null,null, null, null);
@@ -210,10 +215,10 @@ public class Tab1Contacts extends Fragment {
         return json;
     }
 
-    /* FUNCTION: creat a contact instance given name and number */
+    /* FUNCTION: create a contact instance given name and number */
     private HashMap<String, String> createContact(String name, String number) {
         HashMap<String, String> contactItem = new HashMap<String, String>();
-        String formattedName = formatName(name);
+        String formattedName = name; // unformatted name for Korean
         String formattedNumber = formatNumber(number);
         contactItem.put("name", formattedName);
         contactItem.put("number", formattedNumber);
@@ -248,8 +253,18 @@ public class Tab1Contacts extends Fragment {
         @Override
         public void onItemClick(AdapterView<?> adapter, View v, int position, long id) {
             int height = mLayout.getPanelHeight();
-            if (currentIndex != position || height == 0) {
-                mLayout.setPanelHeight(130);
+
+            if (currentIndex == position) {
+                mLayout.setPanelHeight(0);
+                currentView.setBackgroundColor(Color.TRANSPARENT);
+                currentIndex = -1;
+            } else if (currentIndex != position || height == 0) {
+                if (currentIndex != -1) {
+                    currentView.setBackgroundColor(Color.TRANSPARENT);
+                }
+                v.setBackgroundColor(Color.LTGRAY);
+                mLayout.setPanelHeight(200);
+                currentView = v;
                 currentIndex = position;
             } else {
                 mLayout.setPanelHeight(0);
