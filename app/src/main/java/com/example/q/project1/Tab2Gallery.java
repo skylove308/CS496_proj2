@@ -26,17 +26,24 @@ import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.lang.reflect.Field;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
+import static com.example.q.project1.R.id.galleryGridView;
 
 public class Tab2Gallery extends Fragment {
 
     Button btnLoadImg, btnAddImg, btnDelImg;
     ImageView tempView;
+    SeekBar seekBar;
+    TextView seekText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,10 +53,12 @@ public class Tab2Gallery extends Fragment {
         btnLoadImg = rootView.findViewById(R.id.btnLoadImg);
         btnAddImg = rootView.findViewById(R.id.btnAddImg);
         btnDelImg = rootView.findViewById(R.id.btnDelImg);
-        final GridView gv = (GridView) rootView.findViewById(R.id.galleryGridView);
+        final GridView gv = (GridView) rootView.findViewById(galleryGridView);
         GalleryGridAdapter gAdapter = new GalleryGridAdapter(getContext());
         gv.setAdapter(gAdapter);
         tempView = rootView.findViewById(R.id.gall_img_temp_view);
+        seekBar = rootView.findViewById(R.id.gall_seekbar);
+        seekText = rootView.findViewById(R.id.gall_seekcnt);
 
         ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MODE_PRIVATE);
 
@@ -70,6 +79,27 @@ public class Tab2Gallery extends Fragment {
                 btnAddImg.setVisibility(View.GONE);
                 btnDelImg.setVisibility(View.GONE);
                 tempView.setVisibility(View.GONE);
+            }
+        });
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                Integer seek_cnt = seekBar.getProgress();
+                String seek_text = String.valueOf(seek_cnt) + " in a row";
+                seekText.setText(seek_text);
+                gv.setNumColumns(seek_cnt);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 

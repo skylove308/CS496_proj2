@@ -58,7 +58,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1">
 
         <GridView
             android:id="@+id/galleryGridView"
@@ -66,6 +67,25 @@
             android:layout_height="match_parent"
             android:numColumns="3" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+        <SeekBar
+            android:id="@+id/gall_seekbar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:progress="3"
+            android:max="5"
+            android:min="1"/>
+        <TextView
+            android:id="@+id/gall_seekcnt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/seek_num"/>
     </LinearLayout>
 
 </LinearLayout>
