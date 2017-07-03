@@ -1,11 +1,19 @@
 package com.example.q.project1;
 
+import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
+import android.media.ImageReader;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,44 +31,70 @@ import android.widget.Toast;
 import java.lang.reflect.Field;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.MODE_PRIVATE;
 
 public class Tab2Gallery extends Fragment {
+
+    Button btnLoadImg, btnAddImg, btnDelImg;
+    ImageView tempView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab2gallery, container, false);
 
-        Button btnNewImg = rootView.findViewById(R.id.btnNewImg);
-        Button btnDelImg = rootView.findViewById(R.id.btnDelImg);
+        btnLoadImg = rootView.findViewById(R.id.btnLoadImg);
+        btnAddImg = rootView.findViewById(R.id.btnAddImg);
+        btnDelImg = rootView.findViewById(R.id.btnDelImg);
         final GridView gv = (GridView) rootView.findViewById(R.id.galleryGridView);
         GalleryGridAdapter gAdapter = new GalleryGridAdapter(getContext());
         gv.setAdapter(gAdapter);
+        tempView = rootView.findViewById(R.id.gall_img_temp_view);
 
-        btnNewImg.setOnClickListener(new View.OnClickListener() {
+        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MODE_PRIVATE);
+
+
+        btnLoadImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent();
+                Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), 0);
+                startActivityForResult(intent, 0);
             }
         });
 
         btnDelImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Integer imgNum = 0;
-                Field[] fields = R.drawable.class.getFields();
-                for (Field field : fields) {
-                    imgNum++;
-                }
-
-                Toast.makeText(getActivity(), String.valueOf(imgNum), Toast.LENGTH_LONG).show();
+                tempView.setImageBitmap(null);
+                btnAddImg.setVisibility(View.GONE);
+                btnDelImg.setVisibility(View.GONE);
+                tempView.setVisibility(View.GONE);
             }
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 0 && resultCode == RESULT_OK && data != null) {
+            // Let's read picked image data - its URI
+            Uri pickedImage = data.getData();
+            // Let's read picked image path using content resolver
+            String[] filePath = {MediaStore.Images.Media.DATA};
+            Cursor cursor = getContext().getContentResolver().query(pickedImage, filePath, null, null, null);
+            cursor.moveToFirst();
+            String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            cursor.close();
+            tempView.setImageBitmap(bitmap);
+            btnAddImg.setVisibility(View.VISIBLE);
+            btnDelImg.setVisibility(View.VISIBLE);
+            tempView.setVisibility(View.VISIBLE);
+        }
     }
 
     public class GalleryGridAdapter extends BaseAdapter {
@@ -109,16 +143,5 @@ public class Tab2Gallery extends Fragment {
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-//        Toast.makeText(getContext(), "ByeByeBye", Toast.LENGTH_LONG).show();
-        if (resultCode == RESULT_OK) {
-            if (requestCode == 0) {
-//                currImageURI = data.getData();
-                Toast.makeText(getContext(), data.getData().toString(), Toast.LENGTH_LONG).show();
-            }
 
-        }
-    }
 }

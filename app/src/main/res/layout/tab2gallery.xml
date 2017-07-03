@@ -12,19 +12,47 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp">
+        android:layout_marginBottom="10dp"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnNewImg"
+        <ImageView
+            android:id="@+id/gall_img_temp_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/addImg" />
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:maxHeight="200dp"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
 
-        <Button
-            android:id="@+id/btnDelImg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/delImg" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/btnLoadImg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/loadImg" />
+
+            <Button
+                android:id="@+id/btnAddImg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/addImg"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnDelImg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/delImg"
+                android:visibility="gone" />
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -8,8 +8,9 @@
 
 
     <!-- strings for tab2gallery -->
-    <string name="addImg">Add New Image</string>
-    <string name="delImg">Delete Image</string>
+    <string name="loadImg">Load Img</string>
+    <string name="addImg">Add Img</string>
+    <string name="delImg">Del Img</string>
     <string name="title_activity_add_contact">AddContactActivity</string>
 
 </resources>
