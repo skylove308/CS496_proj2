@@ -62,21 +62,21 @@ public class Tab3Game extends Fragment {
         /* listener for start button */
         Button startButton = rootView.findViewById(R.id.startButton);
         Button showButton = rootView.findViewById(R.id.showButton);
-        Button readtxt = rootView.findViewById(R.id.readtxt);
+//        Button readtxt = rootView.findViewById(R.id.readtxt);
 
         startButton.setOnClickListener(startButtonListener);
         showButton.setOnClickListener(showButtonListener);
-        readtxt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                File dir = getContext().getFilesDir();
-                File file = new File(dir, "scores.txt");
-
-                boolean result = file.delete();
-
-                scores.clear();
-            }
-        });
+//        readtxt.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                File dir = getContext().getFilesDir();
+//                File file = new File(dir, "scores.txt");
+//
+//                boolean result = file.delete();
+//
+//                scores.clear();
+//            }
+//        });
 
         loadRank();
 
@@ -293,21 +293,21 @@ public class Tab3Game extends Fragment {
         TextView stageTextView = getActivity().findViewById(R.id.stageTextView);
         Button startButton = getActivity().findViewById(R.id.startButton);
         Button showButton = getActivity().findViewById(R.id.showButton);
-        Button resetButton = getActivity().findViewById(R.id.readtxt);
+//        Button resetButton = getActivity().findViewById(R.id.readtxt);
         stageTextView.setText("SIMON!");
         startButton.setVisibility(View.VISIBLE);
         showButton.setVisibility(View.VISIBLE);
-        resetButton.setVisibility(View.VISIBLE);
+//        resetButton.setVisibility(View.VISIBLE);
 
     }
 
     private void startGame() {
         Button startButton = getActivity().findViewById(R.id.startButton);
         Button showButton = getActivity().findViewById(R.id.showButton);
-        Button resetButton = getActivity().findViewById(R.id.readtxt);
+//        Button resetButton = getActivity().findViewById(R.id.readtxt);
         startButton.setVisibility(View.GONE);
         showButton.setVisibility(View.GONE);
-        resetButton.setVisibility(View.GONE);
+//        resetButton.setVisibility(View.GONE);
         stageTextView.setText("STAGE " + Integer.toString(currentStage));
 
         Random random = new Random();
@@ -467,15 +467,14 @@ public class Tab3Game extends Fragment {
     private void addRank(String userName, Integer currentStage) {
         String[] currentScore = new String[2];
         currentScore[0] = userName;
+        if (currentScore[0].equals("")) {
+            currentScore[0] = "Anonymous";
+        }
         currentScore[1] = String.valueOf(currentStage);
         scores.add(currentScore);
         String newLine = currentScore[0] + "!v!r!" + currentScore[1] + "\r\n";
 
         try {
-
-//            File deldel = getContext().getFilesDir();
-//            File filedd = new File(deldel, "tabC"+File.separator+"scores.txt");
-
 
             FileOutputStream file = getContext().openFileOutput("scores.txt", Context.MODE_APPEND);
             file.write(newLine.getBytes());
