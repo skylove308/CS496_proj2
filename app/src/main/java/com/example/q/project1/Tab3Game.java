@@ -2,14 +2,11 @@ package com.example.q.project1;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.IntegerRes;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,31 +21,15 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class Tab3Game extends Fragment {
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    private int currentStage = 1;
-=======
-=======
->>>>>>> Stashed changes
     private boolean userMode = false;
     private int duration = 500;
     private int currentIndex = 0;
     private int currentStage = 0;
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
     private TextView stageTextView;
     private Button button1;
     private Button button2;
@@ -66,10 +47,6 @@ public class Tab3Game extends Fragment {
         gv.setAdapter(gAdapter);
 
         stageTextView = (TextView) rootView.findViewById(R.id.stageTextView);
-//        button1 = (Button) rootView.findViewById(R.id.button1);
-//        button2 = (Button) rootView.findViewById(R.id.button2);
-//        button3 = (Button) rootView.findViewById(R.id.button3);
-//        button4 = (Button) rootView.findViewById(R.id.button4);
 
         /* listener for start button */
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
@@ -272,32 +249,19 @@ public class Tab3Game extends Fragment {
         turnOff();
 
         for (int i = 0; i < answers.size(); i++) {
-            Log.d("asdf", Integer.toString(answers.get(i)));
             if (i < answers.size() - 1) {
                 simulateOne(answers.get(i), i, false);
             } else {
                 simulateOne(answers.get(i), i, true);
             }
         }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    };
-    public boolean playStage(Integer stage_cnt, ArrayList<Integer> answer) {
-//        // 문제가 나오는 과정
-//        // 사용자가 입력하는 과정
-//        ArrayList<Integer> input = new ArrayList<Integer>();
-//        while () {
-//            input.equals(answer);
-        return true;
-        }
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
     }
 
     private void initGame() {
+        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
+        startButton.setVisibility(View.GONE);
+        stageTextView.setText("STAGE " + Integer.toString(currentStage));
+
         Random random = new Random();
         for (int i = 0; i < 2; i++) {
             answers.add(random.nextInt(4));
@@ -305,8 +269,6 @@ public class Tab3Game extends Fragment {
     }
 
     private void checkAnswer(int number) {
-        Log.d("checkAnswer", Boolean.toString(number == answers.get(currentIndex)));
-
         if (number != answers.get(currentIndex)) {
             restartGame();
             return;
@@ -314,11 +276,7 @@ public class Tab3Game extends Fragment {
 
         currentIndex++;
 
-        Log.d("currentIndex", Integer.toString(currentIndex));
-        Log.d("length", Integer.toString(answers.size()));
-
         if (currentIndex >= answers.size()) {
-            Log.d("checkAnswer", "Next stage");
             nextStage();
         }
     }
@@ -345,9 +303,10 @@ public class Tab3Game extends Fragment {
         answers.clear();
         currentIndex = 0;
         currentStage = 0;
+        turnOff();
         TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
         Button startButton = (Button) getActivity().findViewById(R.id.startButton);
-        stageTextView.setVisibility(View.INVISIBLE);
+        stageTextView.setText("SIMON!");
         startButton.setVisibility(View.VISIBLE);
     }
 
@@ -355,10 +314,6 @@ public class Tab3Game extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Button startButton = (Button) v.findViewById(R.id.startButton);
-            startButton.setVisibility(View.INVISIBLE);
-            stageTextView.setText("STAGE " + Integer.toString(currentStage));
-
             turnOff();
             initGame();
             nextStage();

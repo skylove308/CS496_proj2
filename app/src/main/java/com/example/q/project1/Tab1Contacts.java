@@ -2,14 +2,17 @@ package com.example.q.project1;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -66,7 +69,7 @@ public class Tab1Contacts extends Fragment {
 
         /* initialize contactList from contacts.json and from phone contacts */
         getContactsFromPhone();
-        getContactsFromJSON();
+        // getContactsFromJSON();
 
         /* sort list now that contactList is done */
         sortList();
@@ -89,6 +92,8 @@ public class Tab1Contacts extends Fragment {
         /* listener for edit button */
         Button editButton = (Button) rootView.findViewById(R.id.editButton);
         editButton.setOnClickListener(editButtonListener);
+
+        writeContact("asdf","12345678902");
 
         return rootView;
     }
@@ -157,6 +162,31 @@ public class Tab1Contacts extends Fragment {
             }
         } catch (JSONException e) {
         }
+    }
+
+    private void writeContact(String displayName, String number) {
+//        ArrayList contentProviderOperations = new ArrayList();
+//        //insert raw contact using RawContacts.CONTENT_URI
+//        contentProviderOperations.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+//                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null).withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null).build());
+//        //insert contact display name using Data.CONTENT_URI
+//        contentProviderOperations.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+//                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0).withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+//                .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, displayName).build());
+//        //insert mobile number using Data.CONTENT_URI
+//        contentProviderOperations.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+//                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0).withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+//                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, number).withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build());
+//        try {
+//            getActivity().getContentResolver().applyBatch(ContactsContract.AUTHORITY, contentProviderOperations);
+//        } catch (RemoteException e) {
+//            e.printStackTrace();
+//        } catch (OperationApplicationException e) {
+//            e.printStackTrace();
+//        }
+        Intent intent = new Intent(Intent.ACTION_INSERT,
+                ContactsContract.Contacts.CONTENT_URI);
+        startActivity(intent);
     }
 
     /* FUNCTION: sort contactList */
