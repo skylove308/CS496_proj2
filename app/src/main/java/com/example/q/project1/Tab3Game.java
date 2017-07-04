@@ -21,8 +21,12 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class Tab3Game extends Fragment {
 
+<<<<<<< HEAD
     private int currentStage = 1;
     private TextView stageTextView;
     private List<Integer> answers = new ArrayList<Integer>();
@@ -111,4 +115,30 @@ public class Tab3Game extends Fragment {
 
         }
     };
+    public boolean playStage(Integer stage_cnt, ArrayList<Integer> answer) {
+        // 문제가 나오는 과정
+        // 사용자가 입력하는 과정
+        ArrayList<Integer> input = new ArrayList<Integer>();
+//        while () {
+//            input.equals(answer);
+//        }
+
+    public void startGame() {
+
+        Random random = new Random();
+        Integer stage_cnt = 3;
+        ArrayList<Integer> answer = new ArrayList<Integer>();
+
+        for (int i = 0; i < 3; i++) {
+            answer.add(random.nextInt(4));
+        }
+
+        playStage(stage_cnt, answer);
+
+        while (playStage(stage_cnt, answer)) {
+            stage_cnt++;
+            answer.add(random.nextInt(4))
+        }
+
+    }
 }
