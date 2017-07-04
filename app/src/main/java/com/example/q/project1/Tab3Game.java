@@ -1,11 +1,14 @@
 package com.example.q.project1;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.TextViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +16,16 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tab3Game extends Fragment {
+
+    private int currentStage = 1;
+    private TextView stageTextView;
+    private List<Integer> answers = new ArrayList<Integer>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -24,6 +35,10 @@ public class Tab3Game extends Fragment {
         GameGridViewAdapter gAdapter = new GameGridViewAdapter(getContext());
         gv.setAdapter(gAdapter);
 
+        /* listener for start button */
+        Button startButton = (Button) rootView.findViewById(R.id.startButton);
+        stageTextView = (TextView) rootView.findViewById(R.id.stageTextView);
+        startButton.setOnClickListener(startButtonListener);
 
         return rootView;
     }
@@ -81,4 +96,19 @@ public class Tab3Game extends Fragment {
             return linear;
         }
     }
+
+    private void simulate() {
+
+    }
+
+    View.OnClickListener startButtonListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            Button startButton = (Button) v.findViewById(R.id.startButton);
+            startButton.setVisibility(View.INVISIBLE);
+            stageTextView.setText("Stage " + Integer.toString(currentStage));
+
+        }
+    };
 }

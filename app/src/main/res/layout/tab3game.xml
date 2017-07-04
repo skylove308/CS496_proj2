@@ -9,16 +9,22 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.q.project1.MainActivity$PlaceholderFragment">
 
+    <TextView
+        android:id="@+id/stageTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="START" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp">
 
         <GridView
-        android:id="@+id/gameGridView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:numColumns="2" />
+            android:id="@+id/gameGridView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:numColumns="2" />
 
     </LinearLayout>
 
