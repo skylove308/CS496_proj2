@@ -1,8 +1,10 @@
 package com.example.q.project1;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -14,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -49,12 +52,13 @@ import static com.example.q.project1.R.id.galleryGridView;
 
 public class Tab2Gallery extends Fragment {
 
-    Button btnLoadImg, btnSaveImg, btnClearImg;
-    ImageView tempView;
+    GridView gv;
+    GalleryGridAdapter gAdapter;
+
+    FloatingActionButton FABAddImg;
     SeekBar seekBar;
     TextView seekText;
-    Bitmap bitmap;
-    ArrayList<Bitmap> storedImg = new ArrayList<Bitmap>();
+    ArrayList<String> storedImgPath = new ArrayList<String>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,43 +67,20 @@ public class Tab2Gallery extends Fragment {
 
         loadImageFromStorage();
 
-        btnLoadImg = rootView.findViewById(R.id.btnLoadImg);
-        btnSaveImg = rootView.findViewById(R.id.btnSaveImg);
-        btnClearImg = rootView.findViewById(R.id.btnClearImg);
-        final GridView gv = (GridView) rootView.findViewById(galleryGridView);
-        final GalleryGridAdapter gAdapter = new GalleryGridAdapter(getContext());
+        FABAddImg = rootView.findViewById(R.id.fab_add);
+        gv = (GridView) rootView.findViewById(galleryGridView);
+        gAdapter = new GalleryGridAdapter(getContext());
         gv.setAdapter(gAdapter);
-        tempView = rootView.findViewById(R.id.gall_img_temp_view);
         seekBar = rootView.findViewById(R.id.gall_seekbar);
         seekText = rootView.findViewById(R.id.gall_seekcnt);
 
 
-        btnLoadImg.setOnClickListener(new View.OnClickListener() {
+        FABAddImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 startActivityForResult(intent, 0);
-            }
-        });
-
-        btnClearImg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                tempView.setImageBitmap(null);
-                btnSaveImg.setVisibility(View.GONE);
-                btnClearImg.setVisibility(View.GONE);
-                tempView.setVisibility(View.GONE);
-                btnLoadImg.setText(R.string.loadImg);
-            }
-        });
-
-        btnSaveImg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                storeImage(bitmap);
-                Toast.makeText(getContext(), "Img Added", Toast.LENGTH_SHORT).show();
-                gAdapter.notifyDataSetChanged();
             }
         });
 
@@ -131,20 +112,16 @@ public class Tab2Gallery extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 0 && resultCode == RESULT_OK && data != null) {
-            btnLoadImg.setText(R.string.reloadImg);
             // Let's read picked image data - its URI
-            Uri pickedImage = data.getData();
+            Uri uri = data.getData();
             // Let's read picked image path using content resolver
             String[] filePath = {MediaStore.Images.Media.DATA};
-            Cursor cursor = getContext().getContentResolver().query(pickedImage, filePath, null, null, null);
+            Cursor cursor = getContext().getContentResolver().query(uri, filePath, null, null, null);
             cursor.moveToFirst();
             String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-            bitmap = BitmapFactory.decodeFile(imagePath);
             cursor.close();
-            tempView.setImageBitmap(bitmap);
-            btnSaveImg.setVisibility(View.VISIBLE);
-            btnClearImg.setVisibility(View.VISIBLE);
-            tempView.setVisibility(View.VISIBLE);
+            storeImage(imagePath);
+            gAdapter.notifyDataSetChanged();
         }
 
 
@@ -176,7 +153,7 @@ public class Tab2Gallery extends Fragment {
         return mediaFile;
     }
 
-    private void storeImage(Bitmap image) {
+    private void storeImage(String imagePath) {
         File pictureFile = getOutputMediaFile();
         if (pictureFile == null) {
             Log.d("TAG", "Error creating media file, check storage permissions: ");// e.getMessage());
@@ -184,9 +161,10 @@ public class Tab2Gallery extends Fragment {
         }
         try {
             FileOutputStream fos = new FileOutputStream(pictureFile);
+            Bitmap image = BitmapFactory.decodeFile(imagePath);
             image.compress(Bitmap.CompressFormat.PNG, 90, fos);
             fos.close();
-            storedImg.add(image);
+            storedImgPath.add(imagePath);
         } catch (FileNotFoundException e) {
             Log.d("TAG", "File not found: " + e.getMessage());
         } catch (IOException e) {
@@ -203,8 +181,7 @@ public class Tab2Gallery extends Fragment {
         if (ImgFiles != null) {
             for (int i = 0; i < ImgFiles.length; i++) {
                 if (!ImgFiles[i].isDirectory()) {
-                    Bitmap bitmapFromStorage = BitmapFactory.decodeFile(String.valueOf(ImgFiles[i]));
-                    storedImg.add(bitmapFromStorage);
+                    storedImgPath.add(String.valueOf(ImgFiles[i]));
                 }
             }
         }
@@ -218,7 +195,7 @@ public class Tab2Gallery extends Fragment {
         }
 
         public int getCount() {
-            return storedImg.size();
+            return storedImgPath.size();
         }
 
         public Object getItem(int arg0) {
@@ -229,7 +206,7 @@ public class Tab2Gallery extends Fragment {
             return 0;
         }
 
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             LinearLayout linear = new LinearLayout(context);
             linear.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, 500));
             linear.setPadding(10, 10, 10, 10);
@@ -238,7 +215,33 @@ public class Tab2Gallery extends Fragment {
             imageview.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
             imageview.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-            imageview.setImageBitmap(storedImg.get(position));
+            Bitmap bitmap = BitmapFactory.decodeFile(storedImgPath.get(position));
+
+            imageview.setImageBitmap(bitmap);
+
+            imageview.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    final String[] actions = new String[]{"Show Img", "Delete Img"};
+                    AlertDialog.Builder selectAct = new AlertDialog.Builder(getContext());
+                    selectAct.setTitle("Select Action");
+                    selectAct.setNegativeButton("Cancel", null);
+                    selectAct.setItems(actions, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (i == 0) {
+                                Intent showIntent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(new File(storedImgPath.get(position))));
+                                startActivity(showIntent);
+                            } else {
+                                storedImgPath.remove(position);
+                                gAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    });
+                    selectAct.show();
+
+                }
+            });
 
             linear.addView(imageview);
             return linear;
