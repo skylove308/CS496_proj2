@@ -53,6 +53,13 @@
             android:layout_height="wrap_content"
             android:text="HIGH SCORES"/>
 
+        <Button
+            android:id="@+id/readtxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RESET SCORES"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
 </LinearLayout>

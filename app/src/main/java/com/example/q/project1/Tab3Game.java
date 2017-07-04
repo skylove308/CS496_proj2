@@ -6,17 +6,13 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.DialogPreference;
 import android.support.annotation.RequiresApi;
-import android.support.annotation.StringDef;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -24,17 +20,21 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
 public class Tab3Game extends Fragment {
 
-    private boolean userMode = false;
     final private int duration = 500;
     private int currentIndex = 0;
     private int currentStage = 0;
@@ -53,18 +53,32 @@ public class Tab3Game extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab3game, container, false);
 
-        GridView gv = (GridView) rootView.findViewById(R.id.gameGridView);
+        GridView gv = rootView.findViewById(R.id.gameGridView);
         GameGridViewAdapter gAdapter = new GameGridViewAdapter(getContext());
         gv.setAdapter(gAdapter);
 
-        stageTextView = (TextView) rootView.findViewById(R.id.stageTextView);
+        stageTextView = rootView.findViewById(R.id.stageTextView);
 
         /* listener for start button */
-        Button startButton = (Button) rootView.findViewById(R.id.startButton);
-        Button showButton = (Button) rootView.findViewById(R.id.showButton);
+        Button startButton = rootView.findViewById(R.id.startButton);
+        Button showButton = rootView.findViewById(R.id.showButton);
+        Button readtxt = rootView.findViewById(R.id.readtxt);
 
         startButton.setOnClickListener(startButtonListener);
         showButton.setOnClickListener(showButtonListener);
+        readtxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                File dir = getContext().getFilesDir();
+                File file = new File(dir, "scores.txt");
+
+                boolean result = file.delete();
+
+                scores.clear();
+            }
+        });
+
+        loadRank();
 
         return rootView;
     }
@@ -227,13 +241,13 @@ public class Tab3Game extends Fragment {
                 r1 = new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getActivity(), "SOMETHING WENT WRONG in simulate()", Toast.LENGTH_LONG);
+                        Toast.makeText(getActivity(), "SOMETHING WENT WRONG in simulate()", Toast.LENGTH_LONG).show();
                     }
                 };
                 r2 = new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getActivity(), "SOMETHING WENT WRONG in simulate()", Toast.LENGTH_LONG);
+                        Toast.makeText(getActivity(), "SOMETHING WENT WRONG in simulate()", Toast.LENGTH_LONG).show();
                     }
                 };
 
@@ -276,17 +290,24 @@ public class Tab3Game extends Fragment {
         currentIndex = 0;
         currentStage = 0;
         turnOff();
-        TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
-        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
+        TextView stageTextView = getActivity().findViewById(R.id.stageTextView);
+        Button startButton = getActivity().findViewById(R.id.startButton);
+        Button showButton = getActivity().findViewById(R.id.showButton);
+        Button resetButton = getActivity().findViewById(R.id.readtxt);
         stageTextView.setText("SIMON!");
         startButton.setVisibility(View.VISIBLE);
+        showButton.setVisibility(View.VISIBLE);
+        resetButton.setVisibility(View.VISIBLE);
+
     }
 
     private void startGame() {
-        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
-        Button showButton = (Button) getActivity().findViewById(R.id.showButton);
+        Button startButton = getActivity().findViewById(R.id.startButton);
+        Button showButton = getActivity().findViewById(R.id.showButton);
+        Button resetButton = getActivity().findViewById(R.id.readtxt);
         startButton.setVisibility(View.GONE);
         showButton.setVisibility(View.GONE);
+        resetButton.setVisibility(View.GONE);
         stageTextView.setText("STAGE " + Integer.toString(currentStage));
 
         Random random = new Random();
@@ -323,8 +344,10 @@ public class Tab3Game extends Fragment {
 
     private void restartGame() {
 
-        final View dialogView = (View) View.inflate(getContext(), R.layout.tab3dialog, null);
-        final EditText editName = (EditText) dialogView.findViewById(R.id.editName);
+        final Integer stageResult = currentStage;
+
+        final View dialogView = View.inflate(getContext(), R.layout.tab3dialog, null);
+        final EditText editName = dialogView.findViewById(R.id.editName);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
         alertDialogBuilder.setTitle("Game Over!");
@@ -334,17 +357,12 @@ public class Tab3Game extends Fragment {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 String userName = editName.getText().toString();
-                addRank(userName, currentStage);
+                addRank(userName, stageResult);
             }
         });
 
         AlertDialog alertDialog = alertDialogBuilder.create();
-
-        Window window = alertDialog.getWindow();
-        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         alertDialog.show();
-
         initGame();
     }
 
@@ -359,42 +377,63 @@ public class Tab3Game extends Fragment {
         }
     };
 
-    View.OnClickListener showButtonListener = new View.OnClickListener(){
+    View.OnClickListener showButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            sortList();
             showRank();
         }
     };
 
-    private void loadRank(){
+    private void loadRank() {
+
+        try {
+            final FileInputStream file = getContext().openFileInput("scores.txt");
+            byte[] txt = new byte[1000];
+            file.read(txt);
+            String str = new String(txt);
+            String[] tokens = str.split("\r\n");
+
+            scores.clear();
+
+            for (int i = 0; i < tokens.length; i++) {
+                if (tokens[i].contains("!v!r!")) {
+                    String[] tmpStr = tokens[i].split("!v!r!");
+                    scores.add(tmpStr);
+                }
+            }
+
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
 
     }
 
+    private void sortList() {
+        Collections.sort(scores, new Comparator<String[]>() {
+            public int compare(String[] two, String[] one) {
+                return one[1].compareTo(two[1]);
+            }
+        });
+    }
+
     private void showRank() {
-        final View rankView = (View) View.inflate(getContext(), R.layout.tab3rank, null);
-        final EditText editName = (EditText) rankView.findViewById(R.id.editName);
+        final View rankView = View.inflate(getContext(), R.layout.tab3rank, null);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
         alertDialogBuilder.setTitle("High Scores");
         alertDialogBuilder.setView(rankView);
 
-        ListView scoreListView = (ListView) rankView.findViewById(R.id.rankListView);
+        ListView scoreListView = rankView.findViewById(R.id.rankListView);
+        if (scores.size() == 0) {
+            loadRank();
+        }
         mAdapter adapter = new mAdapter(getContext(), scores);
+        adapter.notifyDataSetChanged();
         scoreListView.setAdapter(adapter);
-
-//        alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialogInterface, int i) {
-//                String userName = editName.getText().toString();
-//                addRank(userName, currentStage);
-//            }
-//        });
 
         AlertDialog alertDialog = alertDialogBuilder.create();
 
-        Window window = alertDialog.getWindow();
-        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         alertDialog.show();
     }
 
@@ -406,22 +445,21 @@ public class Tab3Game extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View v = convertView;
             String[] rowContents = getItem(position);
 
             if (convertView == null) {
-                v = LayoutInflater.from(getContext()).inflate(R.layout.tab3element, parent, false);
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.tab3element, parent, false);
             }
 
-            TextView rankTextView = (TextView) convertView.findViewById(R.id.rankTextView);
-            TextView nameTextView = (TextView) convertView.findViewById(R.id.nameTextView);
-            TextView scoreTextView = (TextView) convertView.findViewById(R.id.scoreTextView);
+            TextView rankTextView = convertView.findViewById(R.id.rankTextView);
+            TextView nameTextView = convertView.findViewById(R.id.nameTextView);
+            TextView scoreTextView = convertView.findViewById(R.id.scoreTextView);
 
             rankTextView.setText(Integer.toString(position + 1));
             nameTextView.setText(rowContents[0]);
             scoreTextView.setText(rowContents[1]);
 
-            return v;
+            return convertView;
         }
     }
 
@@ -431,10 +469,22 @@ public class Tab3Game extends Fragment {
         currentScore[0] = userName;
         currentScore[1] = String.valueOf(currentStage);
         scores.add(currentScore);
+        String newLine = currentScore[0] + "!v!r!" + currentScore[1] + "\r\n";
 
-        // Add to txt file
+        try {
+
+//            File deldel = getContext().getFilesDir();
+//            File filedd = new File(deldel, "tabC"+File.separator+"scores.txt");
+
+
+            FileOutputStream file = getContext().openFileOutput("scores.txt", Context.MODE_APPEND);
+            file.write(newLine.getBytes());
+            file.close();
+
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+
     }
-
-
-
 }

@@ -1,32 +1,23 @@
 package com.example.q.project1;
 
-import android.Manifest;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.media.ImageReader;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,20 +25,15 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import static android.app.Activity.RESULT_OK;
-import static android.content.Context.MODE_PRIVATE;
 import static com.example.q.project1.R.id.galleryGridView;
 
 public class Tab2Gallery extends Fragment {
@@ -60,7 +46,6 @@ public class Tab2Gallery extends Fragment {
     SeekBar seekBar;
     TextView seekText;
     ArrayList<String> storedImgPath = new ArrayList<String>();
-    ArrayList<Uri> storedUriPath = new ArrayList<Uri>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,7 +57,7 @@ public class Tab2Gallery extends Fragment {
         loadImageFromStorage();
 
         FABAddImg = rootView.findViewById(R.id.fab_add);
-        gv = (GridView) rootView.findViewById(galleryGridView);
+        gv = rootView.findViewById(galleryGridView);
         gAdapter = new GalleryGridAdapter(getContext());
         gv.setAdapter(gAdapter);
         seekBar = rootView.findViewById(R.id.gall_seekbar);
