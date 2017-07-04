@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.DialogPreference;
 import android.support.annotation.RequiresApi;
+import android.support.annotation.StringDef;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -16,11 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,7 +47,7 @@ public class Tab3Game extends Fragment {
 
     private List<Integer> answers = new ArrayList<Integer>();
 
-    private List<String[]> scores = new ArrayList<String[]>();
+    private ArrayList<String[]> scores = new ArrayList<String[]>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -367,13 +370,18 @@ public class Tab3Game extends Fragment {
 
     }
 
-    private void showRank(){
+    private void showRank() {
         final View rankView = (View) View.inflate(getContext(), R.layout.tab3rank, null);
         final EditText editName = (EditText) rankView.findViewById(R.id.editName);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
         alertDialogBuilder.setTitle("High Scores");
         alertDialogBuilder.setView(rankView);
+
+        ListView scoreListView = (ListView) rankView.findViewById(R.id.rankListView);
+        mAdapter adapter = new mAdapter(getContext(), scores);
+        scoreListView.setAdapter(adapter);
+
 //        alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 //            @Override
 //            public void onClick(DialogInterface dialogInterface, int i) {
@@ -388,6 +396,33 @@ public class Tab3Game extends Fragment {
         window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
         window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         alertDialog.show();
+    }
+
+    public class mAdapter extends ArrayAdapter<String[]> {
+
+        public mAdapter(Context c, ArrayList<String[]> r) {
+            super(c, 0, r);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = convertView;
+            String[] rowContents = getItem(position);
+
+            if (convertView == null) {
+                v = LayoutInflater.from(getContext()).inflate(R.layout.tab3element, parent, false);
+            }
+
+            TextView rankTextView = (TextView) convertView.findViewById(R.id.rankTextView);
+            TextView nameTextView = (TextView) convertView.findViewById(R.id.nameTextView);
+            TextView scoreTextView = (TextView) convertView.findViewById(R.id.scoreTextView);
+
+            rankTextView.setText(Integer.toString(position + 1));
+            nameTextView.setText(rowContents[0]);
+            scoreTextView.setText(rowContents[1]);
+
+            return v;
+        }
     }
 
 
