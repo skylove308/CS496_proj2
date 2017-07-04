@@ -34,16 +34,24 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/btnArea"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_marginTop="10dp">
 
         <Button
             android:id="@+id/startButton"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:text="PLAY"
             style="@style/Widget.AppCompat.Button.Colored"/>
+
+        <Button
+            android:id="@+id/showButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="HIGH SCORES"/>
 
     </LinearLayout>
 

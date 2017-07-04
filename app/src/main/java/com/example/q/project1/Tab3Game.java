@@ -1,10 +1,12 @@
 package com.example.q.project1;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.DialogPreference;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -12,10 +14,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +44,8 @@ public class Tab3Game extends Fragment {
 
     private List<Integer> answers = new ArrayList<Integer>();
 
+    private List<String[]> scores = new ArrayList<String[]>();
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab3game, container, false);
@@ -50,7 +58,10 @@ public class Tab3Game extends Fragment {
 
         /* listener for start button */
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
+        Button showButton = (Button) rootView.findViewById(R.id.showButton);
+
         startButton.setOnClickListener(startButtonListener);
+        showButton.setOnClickListener(showButtonListener);
 
         return rootView;
     }
@@ -270,7 +281,9 @@ public class Tab3Game extends Fragment {
 
     private void startGame() {
         Button startButton = (Button) getActivity().findViewById(R.id.startButton);
+        Button showButton = (Button) getActivity().findViewById(R.id.showButton);
         startButton.setVisibility(View.GONE);
+        showButton.setVisibility(View.GONE);
         stageTextView.setText("STAGE " + Integer.toString(currentStage));
 
         Random random = new Random();
@@ -306,10 +319,28 @@ public class Tab3Game extends Fragment {
     }
 
     private void restartGame() {
+
+        final View dialogView = (View) View.inflate(getContext(), R.layout.tab3dialog, null);
+        final EditText editName = (EditText) dialogView.findViewById(R.id.editName);
+
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
         alertDialogBuilder.setTitle("Game Over!");
         alertDialogBuilder.setMessage("You got to stage " + Integer.toString(currentStage));
-        alertDialogBuilder.show();
+        alertDialogBuilder.setView(dialogView);
+        alertDialogBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String userName = editName.getText().toString();
+                addRank(userName, currentStage);
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        Window window = alertDialog.getWindow();
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        alertDialog.show();
 
         initGame();
     }
@@ -324,4 +355,51 @@ public class Tab3Game extends Fragment {
             nextStage();
         }
     };
+
+    View.OnClickListener showButtonListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View v) {
+            showRank();
+        }
+    };
+
+    private void loadRank(){
+
+    }
+
+    private void showRank(){
+        final View rankView = (View) View.inflate(getContext(), R.layout.tab3rank, null);
+        final EditText editName = (EditText) rankView.findViewById(R.id.editName);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+        alertDialogBuilder.setTitle("High Scores");
+        alertDialogBuilder.setView(rankView);
+//        alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                String userName = editName.getText().toString();
+//                addRank(userName, currentStage);
+//            }
+//        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        Window window = alertDialog.getWindow();
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        alertDialog.show();
+    }
+
+
+    private void addRank(String userName, Integer currentStage) {
+        String[] currentScore = new String[2];
+        currentScore[0] = userName;
+        currentScore[1] = String.valueOf(currentStage);
+        scores.add(currentScore);
+
+        // Add to txt file
+    }
+
+
+
 }
