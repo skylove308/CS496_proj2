@@ -9,8 +9,9 @@
 
     <!-- strings for tab2gallery -->
     <string name="loadImg">Load Img</string>
-    <string name="addImg">Add Img</string>
-    <string name="delImg">Del Img</string>
+    <string name="saveImg">Save Img</string>
+    <string name="clearImg">Clear Img</string>
+    <string name="reloadImg">Reload Img</string>
     <string name="title_activity_add_contact">AddContactActivity</string>
     <string name="seek_num">3 in a row</string>
 

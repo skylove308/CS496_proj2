@@ -43,14 +43,13 @@ public class Tab1Contacts extends Fragment {
     /* ---------------- */
 
     /* macros */
-    public final int MY_PERMISSIONS_REQUEST = 1;
     public final int EDIT_CONTACT_ACTIVITY_CODE = 1;
 
     /* global variables */
     private int currentIndex = -1;
     private View currentView;
     private SlidingUpPanelLayout mLayout;
-    List<HashMap<String,String>> contactList = new ArrayList<HashMap<String,String>>();
+    List<HashMap<String, String>> contactList = new ArrayList<HashMap<String, String>>();
 
 
     /* -------------- */
@@ -66,7 +65,7 @@ public class Tab1Contacts extends Fragment {
         mLayout.setTouchEnabled(false);
 
         /* initialize contactList from contacts.json and from phone contacts */
-        askForPermissions(); // this calls getContactsFromPhone
+        getContactsFromPhone();
         getContactsFromJSON();
 
         /* sort list now that contactList is done */
@@ -116,51 +115,21 @@ public class Tab1Contacts extends Fragment {
     /* HELPER FUNCTIONS */
     /* ---------------- */
 
-    /* FUNCTION: requests CALL_PHONE and READ_CONTACTS permissions */
-    public void askForPermissions() {
-
-        /* CALL PHONE */
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        getActivity(),
-                        new String[]{Manifest.permission.CALL_PHONE},
-                        MY_PERMISSIONS_REQUEST
-                );
-            }
-        }
-
-        /* READ_ CONTACTS */
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        getActivity(),
-                        new String[]{Manifest.permission.READ_CONTACTS},
-                        MY_PERMISSIONS_REQUEST
-                );
-            } else {
-                getContactsFromPhone();
-            }
-        } else {
-            getContactsFromPhone();
-        }
-    }
-
     /* FUNCTION: reads phone contacts */
     public void getContactsFromPhone() {
         contactList.clear(); // called here since this function is called before getContactsFromJSON
         String phoneNumber = null;
         ContentResolver contentResolver = getContext().getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null,null, null, null);
+        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
-                String contact_id = cursor.getString(cursor.getColumnIndex( ContactsContract.Contacts._ID ));
-                String name = cursor.getString(cursor.getColumnIndex( ContactsContract.Contacts.DISPLAY_NAME ));
-                int hasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex( ContactsContract.Contacts.HAS_PHONE_NUMBER )));
+                String contact_id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                int hasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
                 if (hasPhoneNumber > 0) {
-                    Cursor phoneCursor = contentResolver.query( ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[] { contact_id }, null
+                    Cursor phoneCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{contact_id}, null
                     );
                     while (phoneCursor.moveToNext()) {
                         phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
@@ -186,7 +155,8 @@ public class Tab1Contacts extends Fragment {
                 String number = jsonChildNode.optString("number");
                 contactList.add(createContact(name, number));
             }
-        } catch (JSONException e) {}
+        } catch (JSONException e) {
+        }
     }
 
     /* FUNCTION: sort contactList */

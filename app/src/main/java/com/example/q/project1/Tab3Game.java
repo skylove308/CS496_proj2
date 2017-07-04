@@ -26,7 +26,6 @@ import java.util.Random;
 
 public class Tab3Game extends Fragment {
 
-<<<<<<< HEAD
     private int currentStage = 1;
     private TextView stageTextView;
     private List<Integer> answers = new ArrayList<Integer>();
@@ -116,12 +115,13 @@ public class Tab3Game extends Fragment {
         }
     };
     public boolean playStage(Integer stage_cnt, ArrayList<Integer> answer) {
-        // 문제가 나오는 과정
-        // 사용자가 입력하는 과정
-        ArrayList<Integer> input = new ArrayList<Integer>();
+//        // 문제가 나오는 과정
+//        // 사용자가 입력하는 과정
+//        ArrayList<Integer> input = new ArrayList<Integer>();
 //        while () {
 //            input.equals(answer);
-//        }
+        return true;
+        }
 
     public void startGame() {
 
@@ -137,7 +137,7 @@ public class Tab3Game extends Fragment {
 
         while (playStage(stage_cnt, answer)) {
             stage_cnt++;
-            answer.add(random.nextInt(4))
+            answer.add(random.nextInt(4));
         }
 
     }

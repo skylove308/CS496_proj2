@@ -38,19 +38,19 @@
                 android:text="@string/loadImg" />
 
             <Button
-                android:id="@+id/btnAddImg"
+                android:id="@+id/btnSaveImg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/addImg"
+                android:text="@string/saveImg"
                 android:visibility="gone" />
 
             <Button
-                android:id="@+id/btnDelImg"
+                android:id="@+id/btnClearImg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/delImg"
+                android:text="@string/clearImg"
                 android:visibility="gone" />
         </LinearLayout>
 

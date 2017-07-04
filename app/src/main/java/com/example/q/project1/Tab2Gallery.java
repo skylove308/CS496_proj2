@@ -33,7 +33,15 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
@@ -41,27 +49,29 @@ import static com.example.q.project1.R.id.galleryGridView;
 
 public class Tab2Gallery extends Fragment {
 
-    Button btnLoadImg, btnAddImg, btnDelImg;
+    Button btnLoadImg, btnSaveImg, btnClearImg;
     ImageView tempView;
     SeekBar seekBar;
     TextView seekText;
+    Bitmap bitmap;
+    ArrayList<Bitmap> storedImg = new ArrayList<Bitmap>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab2gallery, container, false);
 
+        loadImageFromStorage();
+
         btnLoadImg = rootView.findViewById(R.id.btnLoadImg);
-        btnAddImg = rootView.findViewById(R.id.btnAddImg);
-        btnDelImg = rootView.findViewById(R.id.btnDelImg);
+        btnSaveImg = rootView.findViewById(R.id.btnSaveImg);
+        btnClearImg = rootView.findViewById(R.id.btnClearImg);
         final GridView gv = (GridView) rootView.findViewById(galleryGridView);
-        GalleryGridAdapter gAdapter = new GalleryGridAdapter(getContext());
+        final GalleryGridAdapter gAdapter = new GalleryGridAdapter(getContext());
         gv.setAdapter(gAdapter);
         tempView = rootView.findViewById(R.id.gall_img_temp_view);
         seekBar = rootView.findViewById(R.id.gall_seekbar);
         seekText = rootView.findViewById(R.id.gall_seekcnt);
-
-        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MODE_PRIVATE);
 
 
         btnLoadImg.setOnClickListener(new View.OnClickListener() {
@@ -73,13 +83,23 @@ public class Tab2Gallery extends Fragment {
             }
         });
 
-        btnDelImg.setOnClickListener(new View.OnClickListener() {
+        btnClearImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 tempView.setImageBitmap(null);
-                btnAddImg.setVisibility(View.GONE);
-                btnDelImg.setVisibility(View.GONE);
+                btnSaveImg.setVisibility(View.GONE);
+                btnClearImg.setVisibility(View.GONE);
                 tempView.setVisibility(View.GONE);
+                btnLoadImg.setText(R.string.loadImg);
+            }
+        });
+
+        btnSaveImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                storeImage(bitmap);
+                Toast.makeText(getContext(), "Img Added", Toast.LENGTH_SHORT).show();
+                gAdapter.notifyDataSetChanged();
             }
         });
 
@@ -90,7 +110,6 @@ public class Tab2Gallery extends Fragment {
                 String seek_text = String.valueOf(seek_cnt) + " in a row";
                 seekText.setText(seek_text);
                 gv.setNumColumns(seek_cnt);
-
             }
 
             @Override
@@ -112,6 +131,7 @@ public class Tab2Gallery extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 0 && resultCode == RESULT_OK && data != null) {
+            btnLoadImg.setText(R.string.reloadImg);
             // Let's read picked image data - its URI
             Uri pickedImage = data.getData();
             // Let's read picked image path using content resolver
@@ -119,12 +139,74 @@ public class Tab2Gallery extends Fragment {
             Cursor cursor = getContext().getContentResolver().query(pickedImage, filePath, null, null, null);
             cursor.moveToFirst();
             String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            bitmap = BitmapFactory.decodeFile(imagePath);
             cursor.close();
             tempView.setImageBitmap(bitmap);
-            btnAddImg.setVisibility(View.VISIBLE);
-            btnDelImg.setVisibility(View.VISIBLE);
+            btnSaveImg.setVisibility(View.VISIBLE);
+            btnClearImg.setVisibility(View.VISIBLE);
             tempView.setVisibility(View.VISIBLE);
+        }
+
+
+    }
+
+    /* Create a File for saving an image or video */
+    private File getOutputMediaFile() {
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + getContext().getApplicationContext().getPackageName()
+                + "/Files/tabB");
+
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
+        File mediaFile;
+        String mImageName = "ChanRong_" + timeStamp + ".jpg";
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        return mediaFile;
+    }
+
+    private void storeImage(Bitmap image) {
+        File pictureFile = getOutputMediaFile();
+        if (pictureFile == null) {
+            Log.d("TAG", "Error creating media file, check storage permissions: ");// e.getMessage());
+            return;
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(pictureFile);
+            image.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            fos.close();
+            storedImg.add(image);
+        } catch (FileNotFoundException e) {
+            Log.d("TAG", "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d("TAG", "Error accessing file: " + e.getMessage());
+        }
+    }
+
+    public void loadImageFromStorage() {
+        String storagePath = Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + getContext().getApplicationContext().getPackageName()
+                + "/Files/tabB";
+        File[] ImgFiles = (new File(storagePath).listFiles());
+        if (ImgFiles != null) {
+            for (int i = 0; i < ImgFiles.length; i++) {
+                if (!ImgFiles[i].isDirectory()) {
+                    Bitmap bitmapFromStorage = BitmapFactory.decodeFile(String.valueOf(ImgFiles[i]));
+                    storedImg.add(bitmapFromStorage);
+                }
+            }
         }
     }
 
@@ -136,7 +218,7 @@ public class Tab2Gallery extends Fragment {
         }
 
         public int getCount() {
-            return pictureID.length;
+            return storedImg.size();
         }
 
         public Object getItem(int arg0) {
@@ -147,18 +229,6 @@ public class Tab2Gallery extends Fragment {
             return 0;
         }
 
-        Integer[] pictureID = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img6, R.drawable.img7, R.drawable.img8, R.drawable.img9, R.drawable.img10, R.drawable.img11, R.drawable.img12, R.drawable.img13, R.drawable.img14, R.drawable.img15, R.drawable.img16, R.drawable.img17, R.drawable.img18, R.drawable.img19, R.drawable.img20, R.drawable.img21, R.drawable.img22};
-
-//        public View getView(int position, View convertView, ViewGroup parent) {
-//            ImageView imageview = new ImageView(context);
-//            imageview.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, 500));
-//            imageview.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//            imageview.setPadding(10, 10, 10, 10);
-//
-//            imageview.setImageResource(colors[position]);
-//            return imageview;
-//        }
-
         public View getView(int position, View convertView, ViewGroup parent) {
             LinearLayout linear = new LinearLayout(context);
             linear.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, 500));
@@ -168,53 +238,10 @@ public class Tab2Gallery extends Fragment {
             imageview.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
             imageview.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-            imageview.setImageBitmap(decodeSampledBitmapFromResource(getResources(), pictureID[position], 150, 150));
-
-//            imageview.setImageResource(pictureID[position]);
+            imageview.setImageBitmap(storedImg.get(position));
 
             linear.addView(imageview);
             return linear;
         }
-
-        public int calculateInSampleSize(
-                BitmapFactory.Options options, int reqWidth, int reqHeight) {
-            // Raw height and width of image
-            final int height = options.outHeight;
-            final int width = options.outWidth;
-            int inSampleSize = 1;
-
-            if (height > reqHeight || width > reqWidth) {
-
-                final int halfHeight = height / 2;
-                final int halfWidth = width / 2;
-
-                // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-                // height and width larger than the requested height and width.
-                while ((halfHeight / inSampleSize) >= reqHeight
-                        && (halfWidth / inSampleSize) >= reqWidth) {
-                    inSampleSize *= 2;
-                }
-            }
-
-            return inSampleSize;
-        }
-
-        public Bitmap decodeSampledBitmapFromResource(Resources res, int resId, int reqWidth, int reqHeight) {
-
-            // First decode with inJustDecodeBounds=true to check dimensions
-            final BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeResource(res, resId, options);
-
-            // Calculate inSampleSize
-            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-            // Decode bitmap with inSampleSize set
-            options.inJustDecodeBounds = false;
-            return BitmapFactory.decodeResource(res, resId, options);
-        }
-
     }
-
-
 }
