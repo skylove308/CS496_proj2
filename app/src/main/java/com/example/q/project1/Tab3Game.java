@@ -26,7 +26,7 @@ import java.util.Random;
 public class Tab3Game extends Fragment {
 
     private boolean userMode = false;
-    private int duration = 500;
+    final private int duration = 500;
     private int currentIndex = 0;
     private int currentStage = 0;
 
@@ -258,6 +258,17 @@ public class Tab3Game extends Fragment {
     }
 
     private void initGame() {
+        answers.clear();
+        currentIndex = 0;
+        currentStage = 0;
+        turnOff();
+        TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
+        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
+        stageTextView.setText("SIMON!");
+        startButton.setVisibility(View.VISIBLE);
+    }
+
+    private void startGame() {
         Button startButton = (Button) getActivity().findViewById(R.id.startButton);
         startButton.setVisibility(View.GONE);
         stageTextView.setText("STAGE " + Integer.toString(currentStage));
@@ -300,14 +311,7 @@ public class Tab3Game extends Fragment {
         alertDialogBuilder.setMessage("You got to stage " + Integer.toString(currentStage));
         alertDialogBuilder.show();
 
-        answers.clear();
-        currentIndex = 0;
-        currentStage = 0;
-        turnOff();
-        TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
-        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
-        stageTextView.setText("SIMON!");
-        startButton.setVisibility(View.VISIBLE);
+        initGame();
     }
 
     View.OnClickListener startButtonListener = new View.OnClickListener() {
@@ -316,6 +320,7 @@ public class Tab3Game extends Fragment {
         public void onClick(View v) {
             turnOff();
             initGame();
+            startGame();
             nextStage();
         }
     };

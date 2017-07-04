@@ -4,6 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.pm.PackageManager;
@@ -14,9 +16,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -50,9 +56,8 @@ public class Tab1Contacts extends Fragment {
 
     /* global variables */
     private int currentIndex = -1;
-    private View currentView;
-    private SlidingUpPanelLayout mLayout;
     List<HashMap<String, String>> contactList = new ArrayList<HashMap<String, String>>();
+    SimpleAdapter simpleAdapter;
 
 
     /* -------------- */
@@ -63,37 +68,34 @@ public class Tab1Contacts extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab1contacts, container, false);
 
-        /* initialize SlidingUpPanelLayout settings */
-        mLayout = (SlidingUpPanelLayout) rootView.findViewById(R.id.sliding_layout);
-        mLayout.setTouchEnabled(false);
-
         /* initialize contactList from contacts.json and from phone contacts */
         getContactsFromPhone();
         // getContactsFromJSON();
 
         /* sort list now that contactList is done */
-        sortList();
+        //sortList();
 
         /* listener for ListView - invokes SlidingUpPanelLayout */
         ListView listview = (ListView) rootView.findViewById(R.id.contacts_listview);
         listview.setOnItemClickListener(listviewListener);
 
         /* adapter for ListView */
-        SimpleAdapter simpleAdapter = new SimpleAdapter(
+        simpleAdapter = new SimpleAdapter(
                 getActivity(), contactList, android.R.layout.simple_list_item_2,
                 new String[]{"name", "number"}, new int[]{android.R.id.text1, android.R.id.text2}
         );
         listview.setAdapter(simpleAdapter);
 
-        /* listener for call button */
-        Button callButton = (Button) rootView.findViewById(R.id.callButton);
-        callButton.setOnClickListener(callButtonListener);
+        FloatingActionButton addButton = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
+        addButton.setOnClickListener(addButtonListener);
 
-        /* listener for edit button */
-        Button editButton = (Button) rootView.findViewById(R.id.editButton);
-        editButton.setOnClickListener(editButtonListener);
-
-        writeContact("asdf","12345678902");
+//        /* listener for call button */
+//        Button callButton = (Button) rootView.findViewById(R.id.callButton);
+//        callButton.setOnClickListener(callButtonListener);
+//
+//        /* listener for edit button */
+//        Button editButton = (Button) rootView.findViewById(R.id.editButton);
+//        editButton.setOnClickListener(editButtonListener);
 
         return rootView;
     }
@@ -103,15 +105,8 @@ public class Tab1Contacts extends Fragment {
 
         /* runs after returning from EditContactActivity */
         if (requestCode == EDIT_CONTACT_ACTIVITY_CODE) {
-
-            int editIndex = data.getIntExtra("index", -1);
-
-            if (resultCode == Activity.RESULT_OK && editIndex != -1) {
-                String editName = data.getStringExtra("newName");
-                String editNumber = data.getStringExtra("newNumber");
-                contactList.get(editIndex).put("name", editName); // unformatted name for Korean
-                contactList.get(editIndex).put("number", formatNumber(editNumber));
-            }
+            getContactsFromPhone();
+            simpleAdapter.notifyDataSetChanged();
         }
     }
 
@@ -124,12 +119,13 @@ public class Tab1Contacts extends Fragment {
     public void getContactsFromPhone() {
         contactList.clear(); // called here since this function is called before getContactsFromJSON
         String phoneNumber = null;
+        String contact_id;
         ContentResolver contentResolver = getContext().getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
-                String contact_id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                contact_id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
                 String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 int hasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
                 if (hasPhoneNumber > 0) {
@@ -142,52 +138,59 @@ public class Tab1Contacts extends Fragment {
                     }
                     phoneCursor.close();
                 }
-                contactList.add(createContact(name, phoneNumber));
+                contactList.add(createContact(contact_id, name, phoneNumber));
             }
         }
         cursor.close();
     }
 
-    /* FUNCTION: Read contacts from contacts.json */
-    private void getContactsFromJSON() {
-        try {
-            JSONObject jsonResponse = new JSONObject(loadJSONFromAsset("contacts.json"));
-            JSONArray jsonMainNode = jsonResponse.optJSONArray("contacts");
+//    /* FUNCTION: Read contacts from contacts.json */
+//    private void getContactsFromJSON() {
+//        try {
+//            JSONObject jsonResponse = new JSONObject(loadJSONFromAsset("contacts.json"));
+//            JSONArray jsonMainNode = jsonResponse.optJSONArray("contacts");
+//
+//            for (int i = 0; i < jsonMainNode.length(); i++) {
+//                JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
+//                String name = jsonChildNode.optString("name");
+//                String number = jsonChildNode.optString("number");
+//                contactList.add(createContact(name, number));
+//            }
+//        } catch (JSONException e) {
+//        }
+//    }
 
-            for (int i = 0; i < jsonMainNode.length(); i++) {
-                JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
-                String name = jsonChildNode.optString("name");
-                String number = jsonChildNode.optString("number");
-                contactList.add(createContact(name, number));
-            }
-        } catch (JSONException e) {
+    private void writeContact() {
+        String id = contactList.get(currentIndex).get("id");
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        ContentResolver contentResolver = getContext().getContentResolver();
+        Cursor cursor = contentResolver.query(uri, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + id, null, null);
+        if (cursor.moveToFirst()) {
+            long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+            Intent intent = new Intent(Intent.ACTION_EDIT, ContactsContract.Contacts.CONTENT_URI);
+            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
+            intent.setData(contactUri);
+            startActivityForResult(intent, EDIT_CONTACT_ACTIVITY_CODE);
+        } else {
+            Toast.makeText(getContext(), "Contact cannot be edited", Toast.LENGTH_LONG);
         }
     }
 
-    private void writeContact(String displayName, String number) {
-//        ArrayList contentProviderOperations = new ArrayList();
-//        //insert raw contact using RawContacts.CONTENT_URI
-//        contentProviderOperations.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
-//                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null).withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null).build());
-//        //insert contact display name using Data.CONTENT_URI
-//        contentProviderOperations.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-//                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0).withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-//                .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, displayName).build());
-//        //insert mobile number using Data.CONTENT_URI
-//        contentProviderOperations.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-//                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0).withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-//                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, number).withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build());
-//        try {
-//            getActivity().getContentResolver().applyBatch(ContactsContract.AUTHORITY, contentProviderOperations);
-//        } catch (RemoteException e) {
-//            e.printStackTrace();
-//        } catch (OperationApplicationException e) {
-//            e.printStackTrace();
+//    private void deleteContact() {
+//        String id = contactList.get(currentIndex).get("id");
+//        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+//        ContentResolver contentResolver = getContext().getContentResolver();
+//        Cursor cursor = contentResolver.query(uri, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + id, null, null);
+//        if (cursor.moveToFirst()) {
+//            long idContact = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+//            Intent intent = new Intent(Intent.ACTION_DELETE, ContactsContract.Contacts.CONTENT_URI);
+//            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, idContact);
+//            intent.setData(contactUri);
+//            startActivity(intent);
+//        } else {
+//            Toast.makeText(getContext(), "Contact cannot be deleted", Toast.LENGTH_LONG);
 //        }
-        Intent intent = new Intent(Intent.ACTION_INSERT,
-                ContactsContract.Contacts.CONTENT_URI);
-        startActivity(intent);
-    }
+//    }
 
     /* FUNCTION: sort contactList */
     private void sortList() {
@@ -216,12 +219,11 @@ public class Tab1Contacts extends Fragment {
     }
 
     /* FUNCTION: create a contact instance given name and number */
-    private HashMap<String, String> createContact(String name, String number) {
+    private HashMap<String, String> createContact(String id, String name, String number) {
         HashMap<String, String> contactItem = new HashMap<String, String>();
-        String formattedName = name; // unformatted name for Korean
-        String formattedNumber = formatNumber(number);
-        contactItem.put("name", formattedName);
-        contactItem.put("number", formattedNumber);
+        contactItem.put("id", id);
+        contactItem.put("name", name);
+        contactItem.put("number", number);
         return contactItem;
     }
 
@@ -252,23 +254,44 @@ public class Tab1Contacts extends Fragment {
 
         @Override
         public void onItemClick(AdapterView<?> adapter, View v, int position, long id) {
-            int height = mLayout.getPanelHeight();
+            currentIndex = position;
 
-            if (currentIndex == position) {
-                mLayout.setPanelHeight(0);
-                currentView.setBackgroundColor(Color.TRANSPARENT);
-                currentIndex = -1;
-            } else if (currentIndex != position || height == 0) {
-                if (currentIndex != -1) {
-                    currentView.setBackgroundColor(Color.TRANSPARENT);
-                }
-                v.setBackgroundColor(Color.LTGRAY);
-                mLayout.setPanelHeight(200);
-                currentView = v;
-                currentIndex = position;
-            } else {
-                mLayout.setPanelHeight(0);
+            CharSequence options[] = new CharSequence[]{"Call Contact", "Edit Contact"};
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+            alertDialogBuilder.setTitle("Options");
+            alertDialogBuilder.setItems(options, dialogListener);
+            alertDialogBuilder.show();
+        }
+    };
+
+    AlertDialog.OnClickListener dialogListener = new AlertDialog.OnClickListener() {
+
+        @Override
+        public void onClick(DialogInterface dialog, int index) {
+            switch (index) {
+                case 0:
+                    Intent callIntent = new Intent(Intent.ACTION_CALL);
+                    String number = contactList.get(currentIndex).get("number");
+                    callIntent.setData(Uri.parse("tel:" + number));
+                    startActivity(callIntent);
+                    break;
+                case 1:
+                    writeContact();
+                    break;
+//                case 2:
+//                    deleteContact();
+//                    break;
             }
+        }
+    };
+
+    View.OnClickListener addButtonListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent("android.intent.action.INSERT", ContactsContract.Contacts.CONTENT_URI);
+            startActivityForResult(intent, EDIT_CONTACT_ACTIVITY_CODE);
         }
     };
 
@@ -277,11 +300,10 @@ public class Tab1Contacts extends Fragment {
 
         @Override
         public void onClick(View v) {
-
             Intent callIntent = new Intent(Intent.ACTION_CALL);
             String number = contactList.get(currentIndex).get("number");
             callIntent.setData(Uri.parse("tel:" + number));
-            startActivity(callIntent);
+            startActivityForResult(callIntent, EDIT_CONTACT_ACTIVITY_CODE);
         }
     };
 
