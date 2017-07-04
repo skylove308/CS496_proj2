@@ -1,14 +1,17 @@
 package com.example.q.project1;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.TextViewCompat;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,17 +20,41 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Tab3Game extends Fragment {
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private int currentStage = 1;
+=======
+=======
+>>>>>>> Stashed changes
+    private boolean userMode = false;
+    private int duration = 500;
+    private int currentIndex = 0;
+    private int currentStage = 0;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private TextView stageTextView;
+    private Button button1;
+    private Button button2;
+    private Button button3;
+    private Button button4;
+
     private List<Integer> answers = new ArrayList<Integer>();
 
     @Override
@@ -38,9 +65,14 @@ public class Tab3Game extends Fragment {
         GameGridViewAdapter gAdapter = new GameGridViewAdapter(getContext());
         gv.setAdapter(gAdapter);
 
+        stageTextView = (TextView) rootView.findViewById(R.id.stageTextView);
+//        button1 = (Button) rootView.findViewById(R.id.button1);
+//        button2 = (Button) rootView.findViewById(R.id.button2);
+//        button3 = (Button) rootView.findViewById(R.id.button3);
+//        button4 = (Button) rootView.findViewById(R.id.button4);
+
         /* listener for start button */
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
-        stageTextView = (TextView) rootView.findViewById(R.id.stageTextView);
         startButton.setOnClickListener(startButtonListener);
 
         return rootView;
@@ -71,48 +103,184 @@ public class Tab3Game extends Fragment {
 
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             LinearLayout linear = new LinearLayout(context);
             linear.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, 500));
             linear.setPadding(32, 32, 32, 32);
 
-            Button button = new Button(context);
+            final Button button = new Button(context);
 
             switch (position) {
                 case 0:
                     button.setBackgroundResource(R.drawable.game_shape_1);
+                    button1 = button;
+                    button1.setId(R.id.button1);
+                    button1.setEnabled(false);
                     break;
                 case 1:
                     button.setBackgroundResource(R.drawable.game_shape_2);
+                    button2 = button;
+                    button2.setId(R.id.button2);
+                    button2.setEnabled(false);
                     break;
                 case 2:
                     button.setBackgroundResource(R.drawable.game_shape_3);
+                    button3 = button;
+                    button3.setId(R.id.button3);
+                    button3.setEnabled(false);
                     break;
                 case 3:
                     button.setBackgroundResource(R.drawable.game_shape_4);
+                    button4 = button;
+                    button4.setId(R.id.button4);
+                    button1.setEnabled(false);
                     break;
             }
 
             button.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
             linear.addView(button);
+            button.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    if (button1.isEnabled()) {
+                        checkAnswer(position);
+                    }
+                }
+            });
 
             return linear;
         }
     }
 
-    private void simulate() {
+    private void simulateOne(int buttonNumber, int order, final boolean last) {
+        final Handler h1 = new Handler();
+        final Handler h2 = new Handler();
+        Runnable r1;
+        Runnable r2;
 
+        switch (buttonNumber) {
+            case 0:
+                r1 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button1.setPressed(true);
+                    }
+                };
+
+                r2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button1.setPressed(false);
+                        if (last) {
+                            turnOn();
+                        }
+                    }
+                };
+                break;
+            case 1:
+                r1 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button2.setPressed(true);
+                    }
+                };
+
+                r2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button2.setPressed(false);
+                        if (last) {
+                            turnOn();
+                        }
+                    }
+                };
+                break;
+            case 2:
+                r1 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button3.setPressed(true);
+                    }
+                };
+
+                r2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button3.setPressed(false);
+                        if (last) {
+                            turnOn();
+                        }
+                    }
+                };
+                break;
+            case 3:
+                r1 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button4.setPressed(true);
+                    }
+                };
+
+                r2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        button4.setPressed(false);
+                        if (last) {
+                            turnOn();
+                        }
+                    }
+                };
+                break;
+            default:
+                r1 = new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "SOMETHING WENT WRONG in simulate()", Toast.LENGTH_LONG);
+                    }
+                };
+                r2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "SOMETHING WENT WRONG in simulate()", Toast.LENGTH_LONG);
+                    }
+                };
+
+                Log.e("simulate", "SOMETHING WENT WRONG");
+                break;
+        }
+
+        h1.postDelayed(r1, order * duration + 100);
+        h2.postDelayed(r2, (order + 1) * duration);
     }
 
-    View.OnClickListener startButtonListener = new View.OnClickListener() {
+    private void turnOff() {
+        button1.setEnabled(false);
+        button2.setEnabled(false);
+        button3.setEnabled(false);
+        button4.setEnabled(false);
+    }
 
-        @Override
-        public void onClick(View v) {
-            Button startButton = (Button) v.findViewById(R.id.startButton);
-            startButton.setVisibility(View.INVISIBLE);
-            stageTextView.setText("Stage " + Integer.toString(currentStage));
+    private void turnOn() {
+        button1.setEnabled(true);
+        button2.setEnabled(true);
+        button3.setEnabled(true);
+        button4.setEnabled(true);
+    }
 
+    private void simulateAll() {
+        turnOff();
+
+        for (int i = 0; i < answers.size(); i++) {
+            Log.d("asdf", Integer.toString(answers.get(i)));
+            if (i < answers.size() - 1) {
+                simulateOne(answers.get(i), i, false);
+            } else {
+                simulateOne(answers.get(i), i, true);
+            }
         }
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     };
     public boolean playStage(Integer stage_cnt, ArrayList<Integer> answer) {
 //        // 문제가 나오는 과정
@@ -122,23 +290,78 @@ public class Tab3Game extends Fragment {
 //            input.equals(answer);
         return true;
         }
-
-    public void startGame() {
-
-        Random random = new Random();
-        Integer stage_cnt = 3;
-        ArrayList<Integer> answer = new ArrayList<Integer>();
-
-        for (int i = 0; i < 3; i++) {
-            answer.add(random.nextInt(4));
-        }
-
-        playStage(stage_cnt, answer);
-
-        while (playStage(stage_cnt, answer)) {
-            stage_cnt++;
-            answer.add(random.nextInt(4));
-        }
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
     }
+
+    private void initGame() {
+        Random random = new Random();
+        for (int i = 0; i < 2; i++) {
+            answers.add(random.nextInt(4));
+        }
+    }
+
+    private void checkAnswer(int number) {
+        Log.d("checkAnswer", Boolean.toString(number == answers.get(currentIndex)));
+
+        if (number != answers.get(currentIndex)) {
+            restartGame();
+            return;
+        }
+
+        currentIndex++;
+
+        Log.d("currentIndex", Integer.toString(currentIndex));
+        Log.d("length", Integer.toString(answers.size()));
+
+        if (currentIndex >= answers.size()) {
+            Log.d("checkAnswer", "Next stage");
+            nextStage();
+        }
+    }
+
+    private int nextStage() {
+        currentIndex = 0;
+        currentStage++;
+
+        Random random = new Random();
+        int newNumber = random.nextInt(4);
+
+        answers.add(newNumber);
+        stageTextView.setText("Stage " + Integer.toString(currentStage));
+        simulateAll();
+        return newNumber;
+    }
+
+    private void restartGame() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+        alertDialogBuilder.setTitle("Game Over!");
+        alertDialogBuilder.setMessage("You got to stage " + Integer.toString(currentStage));
+        alertDialogBuilder.show();
+
+        answers.clear();
+        currentIndex = 0;
+        currentStage = 0;
+        TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
+        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
+        stageTextView.setVisibility(View.INVISIBLE);
+        startButton.setVisibility(View.VISIBLE);
+    }
+
+    View.OnClickListener startButtonListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            Button startButton = (Button) v.findViewById(R.id.startButton);
+            startButton.setVisibility(View.INVISIBLE);
+            stageTextView.setText("STAGE " + Integer.toString(currentStage));
+
+            turnOff();
+            initGame();
+            nextStage();
+        }
+    };
 }
