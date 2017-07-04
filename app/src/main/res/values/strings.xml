@@ -8,10 +8,8 @@
 
 
     <!-- strings for tab2gallery -->
-    <string name="loadImg">Load Img</string>
-    <string name="saveImg">Save Img</string>
-    <string name="clearImg">Clear Img</string>
-    <string name="reloadImg">Reload Img</string>
+    <string name="XImg1">No Image in the Gallery!</string>
+    <string name="XImg2">Please Add a Image by Clicking + Button</string>
     <string name="title_activity_add_contact">AddContactActivity</string>
     <string name="seek_num">3 in a row</string>
 

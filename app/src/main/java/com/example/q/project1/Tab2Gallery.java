@@ -55,15 +55,19 @@ public class Tab2Gallery extends Fragment {
     GridView gv;
     GalleryGridAdapter gAdapter;
 
+    LinearLayout XImg;
     FloatingActionButton FABAddImg;
     SeekBar seekBar;
     TextView seekText;
     ArrayList<String> storedImgPath = new ArrayList<String>();
+    ArrayList<Uri> storedUriPath = new ArrayList<Uri>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab2gallery, container, false);
+
+        XImg = rootView.findViewById(R.id.XImg);
 
         loadImageFromStorage();
 
@@ -112,6 +116,14 @@ public class Tab2Gallery extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 0 && resultCode == RESULT_OK && data != null) {
+
+            if (storedImgPath.size() == 0) {
+                XImg.setVisibility(View.GONE);
+            }
+
+            Toast.makeText(getContext(), "Added Image to Gallery", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getContext(), "Added Image to Gallery", Toast.LENGTH_LONG).show();
+
             // Let's read picked image data - its URI
             Uri uri = data.getData();
             // Let's read picked image path using content resolver
@@ -120,15 +132,16 @@ public class Tab2Gallery extends Fragment {
             cursor.moveToFirst();
             String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
             cursor.close();
-            storeImage(imagePath);
+
+            Bitmap image = BitmapFactory.decodeFile(imagePath);
+            storeImage(image);
             gAdapter.notifyDataSetChanged();
         }
 
 
     }
 
-    /* Create a File for saving an image or video */
-    private File getOutputMediaFile() {
+    private String getInternalPath() {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
@@ -147,24 +160,33 @@ public class Tab2Gallery extends Fragment {
         }
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
-        File mediaFile;
         String mImageName = "ChanRong_" + timeStamp + ".jpg";
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        return mediaStorageDir.getPath() + File.separator + mImageName;
+    }
+
+    /* Create a File for saving an image or video */
+    private File getOutputMediaFile(String path) {
+        if (path == null) {
+            return null;
+        }
+        File mediaFile;
+        mediaFile = new File(path);
         return mediaFile;
     }
 
-    private void storeImage(String imagePath) {
-        File pictureFile = getOutputMediaFile();
+    private void storeImage(Bitmap image) {
+        String internalPath = getInternalPath();
+        File pictureFile = getOutputMediaFile(internalPath);
+
         if (pictureFile == null) {
             Log.d("TAG", "Error creating media file, check storage permissions: ");// e.getMessage());
             return;
         }
         try {
             FileOutputStream fos = new FileOutputStream(pictureFile);
-            Bitmap image = BitmapFactory.decodeFile(imagePath);
             image.compress(Bitmap.CompressFormat.PNG, 90, fos);
             fos.close();
-            storedImgPath.add(imagePath);
+            storedImgPath.add(internalPath);
         } catch (FileNotFoundException e) {
             Log.d("TAG", "File not found: " + e.getMessage());
         } catch (IOException e) {
@@ -184,6 +206,8 @@ public class Tab2Gallery extends Fragment {
                     storedImgPath.add(String.valueOf(ImgFiles[i]));
                 }
             }
+        } else {
+            XImg.setVisibility(View.VISIBLE);
         }
     }
 
@@ -222,7 +246,7 @@ public class Tab2Gallery extends Fragment {
             imageview.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    final String[] actions = new String[]{"Show Img", "Delete Img"};
+                    final String[] actions = new String[]{"Show Image", "Delete Image"};
                     AlertDialog.Builder selectAct = new AlertDialog.Builder(getContext());
                     selectAct.setTitle("Select Action");
                     selectAct.setNegativeButton("Cancel", null);
@@ -230,11 +254,26 @@ public class Tab2Gallery extends Fragment {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             if (i == 0) {
-                                Intent showIntent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(new File(storedImgPath.get(position))));
-                                startActivity(showIntent);
+//                                Intent showIntent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(new File(storedImgPath.get(position))));
+//                                startActivity(showIntent);
+
+                                Toast.makeText(getContext(), storedImgPath.get(position), Toast.LENGTH_LONG).show();
+
+                                Intent galleryIntent = new Intent(Intent.ACTION_VIEW);
+                                galleryIntent.setDataAndType(Uri.fromFile(new File(storedImgPath.get(position))), "image/*");
+                                galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(galleryIntent);
+
                             } else {
+                                File delFile = new File(storedImgPath.get(position));
+                                if (delFile.delete()) {
+                                    Toast.makeText(getContext(), "Deleted Image from Gallery", Toast.LENGTH_LONG).show();
+                                }
                                 storedImgPath.remove(position);
                                 gAdapter.notifyDataSetChanged();
+                                if (storedImgPath.size() == 0) {
+                                    XImg.setVisibility(View.VISIBLE);
+                                }
                             }
                         }
                     });
