@@ -52,16 +52,16 @@ public class Tab2Gallery extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab2gallery, container, false);
 
-        XImg = rootView.findViewById(R.id.XImg);
+        XImg = (LinearLayout) rootView.findViewById(R.id.XImg);
 
         loadImageFromStorage();
 
-        FABAddImg = rootView.findViewById(R.id.fab_add);
-        gv = rootView.findViewById(galleryGridView);
+        FABAddImg = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
+        gv = (GridView) rootView.findViewById(galleryGridView);
         gAdapter = new GalleryGridAdapter(getContext());
         gv.setAdapter(gAdapter);
-        seekBar = rootView.findViewById(R.id.gall_seekbar);
-        seekText = rootView.findViewById(R.id.gall_seekcnt);
+        seekBar = (SeekBar) rootView.findViewById(R.id.gall_seekbar);
+        seekText = (TextView) rootView.findViewById(R.id.gall_seekcnt);
 
 
         FABAddImg.setOnClickListener(new View.OnClickListener() {

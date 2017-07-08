@@ -58,7 +58,7 @@ public class Tab1Contacts extends Fragment {
         //sortList();
 
         /* listener for ListView - invokes SlidingUpPanelLayout */
-        ListView listview = rootView.findViewById(R.id.contacts_listview);
+        ListView listview = (ListView) rootView.findViewById(R.id.contacts_listview);
         listview.setOnItemClickListener(listviewListener);
 
         /* adapter for ListView */
@@ -68,7 +68,7 @@ public class Tab1Contacts extends Fragment {
         );
         listview.setAdapter(simpleAdapter);
 
-        FloatingActionButton addButton = rootView.findViewById(R.id.fab_add);
+        FloatingActionButton addButton = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
         addButton.setOnClickListener(addButtonListener);
 
         return rootView;

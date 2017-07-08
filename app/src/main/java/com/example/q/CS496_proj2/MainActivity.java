@@ -15,6 +15,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,8 +27,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
+
         askForPermissions();
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -65,8 +73,10 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return new Tab1Contacts();
                 case 1:
-                    return new Tab2Gallery();
+                    return new Tab1_2Contacts();
                 case 2:
+                    return new Tab2Gallery();
+                case 3:
                     return new Tab3Game();
             }
             return null;
@@ -74,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 3;
+            return 4;
         }
 
         @Override
@@ -83,8 +93,10 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return "CONTACTS";
                 case 1:
-                    return "GALLERY";
+                    return "CONTACTS_2";
                 case 2:
+                    return "GALLERY";
+                case 3:
                     return "SIMON";
             }
             return null;

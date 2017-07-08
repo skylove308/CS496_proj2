@@ -52,15 +52,15 @@ public class Tab3Game extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab3game, container, false);
 
-        GridView gv = rootView.findViewById(R.id.gameGridView);
+        GridView gv = (GridView) rootView.findViewById(R.id.gameGridView);
         GameGridViewAdapter gAdapter = new GameGridViewAdapter(getContext());
         gv.setAdapter(gAdapter);
 
-        stageTextView = rootView.findViewById(R.id.stageTextView);
+        stageTextView = (TextView) rootView.findViewById(R.id.stageTextView);
 
         /* listener for start button */
-        Button startButton = rootView.findViewById(R.id.startButton);
-        Button showButton = rootView.findViewById(R.id.showButton);
+        Button startButton = (Button) rootView.findViewById(R.id.startButton);
+        Button showButton = (Button) rootView.findViewById(R.id.showButton);
 //        Button readtxt = rootView.findViewById(R.id.readtxt);
 
         startButton.setOnClickListener(startButtonListener);
@@ -289,9 +289,9 @@ public class Tab3Game extends Fragment {
         currentIndex = 0;
         currentStage = 0;
         turnOff();
-        TextView stageTextView = getActivity().findViewById(R.id.stageTextView);
-        Button startButton = getActivity().findViewById(R.id.startButton);
-        Button showButton = getActivity().findViewById(R.id.showButton);
+        TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
+        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
+        Button showButton = (Button) getActivity().findViewById(R.id.showButton);
 //        Button resetButton = getActivity().findViewById(R.id.readtxt);
         stageTextView.setText("SIMON!");
         startButton.setVisibility(View.VISIBLE);
@@ -301,8 +301,8 @@ public class Tab3Game extends Fragment {
     }
 
     private void startGame() {
-        Button startButton = getActivity().findViewById(R.id.startButton);
-        Button showButton = getActivity().findViewById(R.id.showButton);
+        Button startButton = (Button) getActivity().findViewById(R.id.startButton);
+        Button showButton = (Button) getActivity().findViewById(R.id.showButton);
 //        Button resetButton = getActivity().findViewById(R.id.readtxt);
         startButton.setVisibility(View.GONE);
         showButton.setVisibility(View.GONE);
@@ -346,7 +346,7 @@ public class Tab3Game extends Fragment {
         final Integer stageResult = currentStage;
 
         final View dialogView = View.inflate(getContext(), R.layout.tab3dialog, null);
-        final EditText editName = dialogView.findViewById(R.id.editName);
+        final EditText editName = (EditText) dialogView.findViewById(R.id.editName);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
         alertDialogBuilder.setTitle("Game Over!");
@@ -423,7 +423,7 @@ public class Tab3Game extends Fragment {
         alertDialogBuilder.setTitle("High Scores");
         alertDialogBuilder.setView(rankView);
 
-        ListView scoreListView = rankView.findViewById(R.id.rankListView);
+        ListView scoreListView = (ListView) rankView.findViewById(R.id.rankListView);
         if (scores.size() == 0) {
             loadRank();
         }
@@ -450,9 +450,9 @@ public class Tab3Game extends Fragment {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.tab3element, parent, false);
             }
 
-            TextView rankTextView = convertView.findViewById(R.id.rankTextView);
-            TextView nameTextView = convertView.findViewById(R.id.nameTextView);
-            TextView scoreTextView = convertView.findViewById(R.id.scoreTextView);
+            TextView rankTextView = (TextView) convertView.findViewById(R.id.rankTextView);
+            TextView nameTextView = (TextView) convertView.findViewById(R.id.nameTextView);
+            TextView scoreTextView = (TextView) convertView.findViewById(R.id.scoreTextView);
 
             rankTextView.setText(Integer.toString(position + 1));
             nameTextView.setText(rowContents[0]);
