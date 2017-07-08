@@ -1,4 +1,4 @@
-package com.example.q.project1;
+package com.example.q.CS496_proj2;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

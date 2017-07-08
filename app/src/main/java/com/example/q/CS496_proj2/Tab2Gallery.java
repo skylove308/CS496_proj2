@@ -1,4 +1,4 @@
-package com.example.q.project1;
+package com.example.q.CS496_proj2;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import static android.app.Activity.RESULT_OK;
-import static com.example.q.project1.R.id.galleryGridView;
+import static com.example.q.CS496_proj2.R.id.galleryGridView;
 
 public class Tab2Gallery extends Fragment {
 

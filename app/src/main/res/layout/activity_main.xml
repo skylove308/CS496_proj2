@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.q.project1.MainActivity">
+    tools:context="com.example.q.CS496_proj2.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
