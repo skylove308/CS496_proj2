@@ -451,7 +451,7 @@ public class Tab3Game extends Fragment {
             }
 
             TextView rankTextView = (TextView) convertView.findViewById(R.id.rankTextView);
-            TextView nameTextView = (TextView) convertView.findViewById(R.id.nameTextView);
+            TextView nameTextView = (TextView) convertView.findViewById(R.id.nameText);
             TextView scoreTextView = (TextView) convertView.findViewById(R.id.scoreTextView);
 
             rankTextView.setText(Integer.toString(position + 1));
