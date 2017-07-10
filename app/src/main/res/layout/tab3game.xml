@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.q.project1.MainActivity$PlaceholderFragment">
+    tools:context="com.example.q.CS496_proj2.MainActivity$PlaceholderFragment">
 
     <TextView
         android:id="@+id/stageTextView"
