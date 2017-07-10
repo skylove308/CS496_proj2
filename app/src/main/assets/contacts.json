@@ -1,0 +1,59 @@
+{
+  "contacts": [
+    {
+      "name": "Che Guevara",
+      "number": "01000000000",
+      "email": "cassiozen@gmail.com"
+    },
+    {
+      "name": "Hans Zimmer",
+      "number": "01055555555",
+      "email": "gaearon@somewhere.com"
+    },
+    {
+      "name": "Wolfgang Mozart",
+      "number": "01087654321",
+      "email": "floydophone@somewhere.com"
+    },
+    {
+      "name": "Paul Regret",
+      "number": "01012341234",
+      "email": "zpao@somewhere.com"
+    },
+    {
+      "name": "Ryan Gosling",
+      "number": "01055557777",
+      "email": "rpflorence@somewhere.com"
+    },
+    {
+      "name": "홍길동",
+      "number": "01099997676",
+      "email": "sebmarkbage@here.com"
+    },
+    {
+      "name": "Pablo Picasso",
+      "number": "01079232842",
+      "email": "cassiozen@gmail.com"
+    },
+    {
+      "name": "Thomas Aquinas",
+      "number": "01009871234",
+      "email": "gaearon@somewhere.com"
+    },
+    {
+      "name": "Katy Perry",
+      "number": "01033334444",
+      "email": "floydophone@somewhere.com"
+    },
+    {
+      "name": "김삼사",
+      "number": "01033334444",
+      "email": "floydophone@somewhere.com"
+    },
+    {
+      "name": "이육칠",
+      "number": "01066667777",
+      "email": "floydophone@somewhere.com"
+    }
+  ]
+}

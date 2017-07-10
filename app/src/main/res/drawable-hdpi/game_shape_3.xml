@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_pressed="false">
+        <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+            <item>
+                <shape xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:shape="rectangle"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent">
+
+                    <corners
+                        android:radius="@dimen/default_radius"
+                        android:bottomLeftRadius="@dimen/edge_border"
+                        android:bottomRightRadius="@dimen/other_border"
+                        android:topLeftRadius="@dimen/other_border"
+                        android:topRightRadius="@dimen/other_border" />
+
+                    <solid android:color="@color/lightGray" />
+
+                </shape>
+            </item>
+
+            <item android:bottom="@dimen/shadow_offset" android:right="@dimen/shadow_offset">
+                <shape xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:shape="rectangle"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent">
+
+                    <corners
+                        android:radius="@dimen/default_radius"
+                        android:bottomLeftRadius="@dimen/edge_border"
+                        android:bottomRightRadius="@dimen/other_border"
+                        android:topLeftRadius="@dimen/other_border"
+                        android:topRightRadius="@dimen/other_border" />
+
+                    <solid android:color="#0000FF" />
+
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
+    <item android:state_pressed="true">
+        <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+            <item>
+                <shape xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:shape="rectangle"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent">
+
+                    <corners
+                        android:radius="@dimen/default_radius"
+                        android:bottomLeftRadius="@dimen/edge_border"
+                        android:bottomRightRadius="@dimen/other_border"
+                        android:topLeftRadius="@dimen/other_border"
+                        android:topRightRadius="@dimen/other_border" />
+
+                    <solid android:color="@color/lightGray" />
+
+                </shape>
+            </item>
+
+            <item android:bottom="@dimen/shadow_offset" android:right="@dimen/shadow_offset">
+                <shape xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:shape="rectangle"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent">
+
+                    <corners
+                        android:radius="@dimen/default_radius"
+                        android:bottomLeftRadius="@dimen/edge_border"
+                        android:bottomRightRadius="@dimen/other_border"
+                        android:topLeftRadius="@dimen/other_border"
+                        android:topRightRadius="@dimen/other_border" />
+
+                    <gradient
+                        android:gradientRadius="150"
+                        android:centerX="55%"
+                        android:centerY="45%"
+                        android:centerColor="#FFFFFF"
+                        android:startColor="#0000FF"
+                        android:endColor="#0000FF"
+                        android:type="radial" />
+
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
+</selector>
