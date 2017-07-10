@@ -25,8 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-import static com.example.q.CS496_proj2.Tab1_2Contacts.facebookName;
-import static com.example.q.CS496_proj2.Tab1_2Contacts.facebookPicture;
+
 
 public class FacebookViewAdapter extends BaseAdapter {
 
@@ -120,7 +119,6 @@ public class FacebookViewAdapter extends BaseAdapter {
         }
 
         protected void onPostExecute(Void none){
-
 
             iconImageView.setImageBitmap(bmImg);
         }
