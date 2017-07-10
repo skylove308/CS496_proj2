@@ -39,6 +39,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.ResponseCache;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
@@ -46,6 +47,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+
+
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.q.CS496_proj2.R.id.galleryGridView;
@@ -131,7 +139,13 @@ public class Tab2Gallery extends Fragment {
 
             final Bitmap tmp_image = BitmapFactory.decodeFile(imagePath);
             final String photo_id = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
-            final Bitmap image = Bitmap.createScaledBitmap(tmp_image, 300, 300, false);
+
+            int width = tmp_image.getWidth();
+            int height = tmp_image.getHeight();
+            int larger = width > height ? width : height;
+            float ratio = (float) 300 / larger;
+            final Bitmap image = Bitmap.createScaledBitmap(tmp_image, (int) (width * ratio), (int) (height * ratio), false);
+
             bitmaps.add(createObject(image, photo_id));
             gAdapter.notifyDataSetChanged();
 
@@ -249,95 +263,144 @@ public class Tab2Gallery extends Fragment {
         }
     }
 
+//    public void add(Bitmap bitmap, String photo_id) {
+//        Log.d("starting add", "starting add");
+//        HttpURLConnection urlConnection = null;
+//
+//        try {
+//            URL url = new URL(server + "/addGallery");
+//            urlConnection = (HttpURLConnection) url.openConnection();
+//            urlConnection.setRequestMethod("POST");
+//            urlConnection.setDoInput(true);
+//            urlConnection.setDoOutput(true);
+//
+//            String id = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
+//            JSONObject data = new JSONObject();
+//            data.put("id", id);
+//            data.put("photo_id", photo_id);
+//            data.put("bitmap", BitMapToString(bitmap));
+//
+//            OutputStream os = urlConnection.getOutputStream();
+//            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+//            writer.write(getPostDataString(data));
+//            writer.flush();
+//            writer.close();
+//            os.close();
+//
+//            int responseCode = urlConnection.getResponseCode();
+//            Log.d("add photo", Integer.toString(responseCode));
+//
+//            if (responseCode == HttpURLConnection.HTTP_OK) {
+//                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+//                StringBuffer sb = new StringBuffer("");
+//                String line = "";
+//
+//                while ((line = in.readLine()) != null) {
+//                    sb.append(line);
+//                }
+//
+//                in.close();
+//                Log.d("asdf", sb.toString());
+//            }
+//        } catch (Exception e) {
+//            Log.e("OTHER", Log.getStackTraceString(e));
+//        } finally {
+//            if (urlConnection == null) urlConnection.disconnect();
+//        }
+//    }
+
     public void add(Bitmap bitmap, String photo_id) {
-        Log.d("starting add", "starting add");
-        HttpURLConnection urlConnection = null;
-
         try {
-            URL url = new URL(server + "/addGallery");
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(true);
-
             String id = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
-            JSONObject data = new JSONObject();
-            data.put("id", id);
-            data.put("photo_id", photo_id);
-            data.put("bitmap", BitMapToString(bitmap));
 
-            OutputStream os = urlConnection.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-            writer.write(getPostDataString(data));
-            writer.flush();
-            writer.close();
-            os.close();
+            OkHttpClient httpClient = new OkHttpClient();
+            MultipartBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("id", id)
+                    .addFormDataPart("photo_id", photo_id)
+                    .addFormDataPart("bitmap", BitMapToString(bitmap))
+                    .build();
 
-            int responseCode = urlConnection.getResponseCode();
-            Log.d("add photo", Integer.toString(responseCode));
+            Request request = new Request.Builder().url(server + "/addGallery")
+                    .post(requestBody).build();
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                StringBuffer sb = new StringBuffer("");
-                String line = "";
+            Response response = httpClient.newCall(request).execute();
+            String result = response.body().string();
+            Log.d("TEST RESULT", result);
 
-                while ((line = in.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                in.close();
-                Log.d("asdf", sb.toString());
-            }
         } catch (Exception e) {
-            Log.e("OTHER", Log.getStackTraceString(e));
-        } finally {
-            if (urlConnection == null) urlConnection.disconnect();
+            // handle exception here
+            Log.e(e.getClass().getName(), e.getMessage());
         }
     }
 
     public void delete(Bitmap bitmap, String photo_id) {
-        HttpURLConnection urlConnection = null;
-
         try {
-            URL url = new URL(server + "/deleteGallery");
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(true);
-
             String id = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
-            JSONObject data = new JSONObject();
-            data.put("id", id);
-            data.put("bitmap", BitMapToString(bitmap));
-            data.put("photo_id", photo_id);
 
-            OutputStream os = urlConnection.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-            writer.write(getPostDataString(data));
-            writer.flush();
-            writer.close();
-            os.close();
+            OkHttpClient httpClient = new OkHttpClient();
+            MultipartBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("id", id)
+                    .addFormDataPart("photo_id", photo_id)
+                    .addFormDataPart("bitmap", BitMapToString(bitmap))
+                    .build();
 
-            int responseCode = urlConnection.getResponseCode();
-            Log.d("delete photo", Integer.toString(responseCode));
+            Request request = new Request.Builder().url(server + "/deleteGallery")
+                    .post(requestBody).build();
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                StringBuffer sb = new StringBuffer("");
-                String line = "";
+            Response response = httpClient.newCall(request).execute();
+            String result = response.body().string();
+            Log.d("TEST RESULT", result);
 
-                while ((line = in.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                in.close();
-                Log.d("asdf", sb.toString());
-            }
         } catch (Exception e) {
-            Log.e("OTHER", Log.getStackTraceString(e));
-        } finally {
-            if (urlConnection == null) urlConnection.disconnect();
+            // handle exception here
+            Log.e(e.getClass().getName(), e.getMessage());
         }
+
+
+//        HttpURLConnection urlConnection = null;
+//
+//        try {
+//            URL url = new URL(server + "/deleteGallery");
+//            urlConnection = (HttpURLConnection) url.openConnection();
+//            urlConnection.setRequestMethod("POST");
+//            urlConnection.setDoInput(true);
+//            urlConnection.setDoOutput(true);
+//
+//            String id = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
+//            JSONObject data = new JSONObject();
+//            data.put("id", id);
+//            data.put("bitmap", BitMapToString(bitmap));
+//            data.put("photo_id", photo_id);
+//
+//            OutputStream os = urlConnection.getOutputStream();
+//            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+//            writer.write(getPostDataString(data));
+//            writer.flush();
+//            writer.close();
+//            os.close();
+//
+//            int responseCode = urlConnection.getResponseCode();
+//            Log.d("delete photo", Integer.toString(responseCode));
+//
+//            if (responseCode == HttpURLConnection.HTTP_OK) {
+//                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+//                StringBuffer sb = new StringBuffer("");
+//                String line = "";
+//
+//                while ((line = in.readLine()) != null) {
+//                    sb.append(line);
+//                }
+//
+//                in.close();
+//                Log.d("asdf", sb.toString());
+//            }
+//        } catch (Exception e) {
+//            Log.e("OTHER", Log.getStackTraceString(e));
+//        } finally {
+//            if (urlConnection == null) urlConnection.disconnect();
+//        }
     }
 
     public Bitmap StringToBitMap(String encodedString){
