@@ -59,6 +59,8 @@ public class Tab1_2Contacts extends Fragment {
     FacebookViewAdapter facebooklist;
     private static ListView listview;
     private Context context;
+    LoginButton loginButton;
+    AccessToken accesstoken = AccessToken.getCurrentAccessToken();
 
     public Tab1_2Contacts() {
         // Required empty public constructor
@@ -69,6 +71,24 @@ public class Tab1_2Contacts extends Fragment {
 
         callbackManager = CallbackManager.Factory.create();
 
+
+        if (accesstoken != null) {
+
+            GraphRequest graphRequest = GraphRequest.newMeRequest(accesstoken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                @Override
+                public void onCompleted(JSONObject object, GraphResponse response) {
+                    try {
+                        String userID = object.getString("id");
+                        getFacebookContacts(userID);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            graphRequest.executeAsync();
+        } else {
+
+        }
     }
 
 
@@ -81,62 +101,54 @@ public class Tab1_2Contacts extends Fragment {
 
         listview = (ListView) view.findViewById(R.id.listview22);
 
-        LoginButton loginButton = (LoginButton) view.findViewById(R.id.login_button);
+        loginButton = (LoginButton) view.findViewById(R.id.login_button);
+
         loginButton.setReadPermissions(Arrays.asList("public_profile"));
         // If using in a fragment
         loginButton.setFragment(this);
         // Other app specific specialization
 
         // Callback registration
-        final AccessToken accesstoken = AccessToken.getCurrentAccessToken();
+
         if (accesstoken != null) {
 
-            GraphRequest graphRequest = GraphRequest.newMeRequest(accesstoken, new GraphRequest.GraphJSONObjectCallback() {
+            facebooklist = new FacebookViewAdapter(facebookName, facebookPicture);
+            listview.setAdapter(facebooklist);
+
+    }
+        else {
+
+
+            loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
-                public void onCompleted(JSONObject object, GraphResponse response) {
-                    try {
-                        String userID = object.getString("id");
-                        getFacebookContacts(userID);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                public void onSuccess(LoginResult loginResult) {
+                    GraphRequest graphRequest = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            try {
+                                String userID = object.getString("id");
+                                getFacebookContacts(userID);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+                    graphRequest.executeAsync();
+                }
+
+                @Override
+                public void onCancel() {
+                    // App code
+                }
+
+                @Override
+                public void onError(FacebookException exception) {
+                    // App code
                 }
             });
 
-            graphRequest.executeAsync();
-
-    }
-        else{
-                loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        GraphRequest graphRequest = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-                            @Override
-                            public void onCompleted(JSONObject object, GraphResponse response) {
-                                try {
-                                    String userID = object.getString("id");
-                                    getFacebookContacts(userID);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-
-                        graphRequest.executeAsync();
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        // App code
-                    }
-
-                    @Override
-                    public void onError(FacebookException exception) {
-                        // App code
-                    }
-                });
-            }
-
+        }
         return view;
 
     }
