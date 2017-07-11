@@ -3,19 +3,13 @@ package com.example.q.CS496_proj2;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInstaller;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -25,31 +19,15 @@ import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.facebook.Profile;
-import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Objects;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -199,42 +177,42 @@ public class Tab1_2Contacts extends Fragment {
     }
 
     public void getFacebookContacts(String userID) {
-                new GraphRequest(
-                        AccessToken.getCurrentAccessToken(),
-                        "/" + userID + "/taggable_friends?limit=50",
-                        null,
-                        HttpMethod.GET,
-                        new GraphRequest.Callback() {
-                            public void onCompleted(GraphResponse response) {
+        new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "/" + userID + "/taggable_friends?limit=50",
+                null,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
 
-                                Log.d("RESPONSE", "********************************************** " + response.toString());
-                                try {
-                                    JSONArray friendList = response.getJSONObject().getJSONArray("data");
+                        Log.d("RESPONSE", "********************************************** " + response.toString());
+                        try {
+                            JSONArray friendList = response.getJSONObject().getJSONArray("data");
 
-                                    String[] data = new String[2];
+                            String[] data = new String[2];
 
-                                    for (int i = 0; i < friendList.length(); i++) {
-                                        data[0] = friendList.getJSONObject(i).getString("name");
-                                        data[1] = friendList.getJSONObject(i).getJSONObject("picture").getJSONObject("data").getString("url");
+                            for (int i = 0; i < friendList.length(); i++) {
+                                data[0] = friendList.getJSONObject(i).getString("name");
+                                data[1] = friendList.getJSONObject(i).getJSONObject("picture").getJSONObject("data").getString("url");
 
-                                        facebookName.add(data[0]);
-                                        facebookPicture.add(data[1]);
+                                facebookName.add(data[0]);
+                                facebookPicture.add(data[1]);
 
-                                        HashMap<String, String> map1 = new HashMap<String, String>();
-                                        HashMap<String, String> map2 = new HashMap<String, String>();
-                                        map1.put("name", data[0]);
-                                        map2.put("picture", data[1]);
-                                        facebook.add(map1);
-                                        facebook.add(map2);
-                                    }
-                                    Log.d("name", "*****************************" + facebook);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                facebooklist = new FacebookViewAdapter(facebookName, facebookPicture);
-                                listview.setAdapter(facebooklist);
+                                HashMap<String, String> map1 = new HashMap<String, String>();
+                                HashMap<String, String> map2 = new HashMap<String, String>();
+                                map1.put("name", data[0]);
+                                map2.put("picture", data[1]);
+                                facebook.add(map1);
+                                facebook.add(map2);
                             }
+                            Log.d("name", "*****************************" + facebook);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                ).executeAsync();
-            }
+                        facebooklist = new FacebookViewAdapter(facebookName, facebookPicture);
+                        listview.setAdapter(facebooklist);
+                    }
+                }
+        ).executeAsync();
+    }
 }
