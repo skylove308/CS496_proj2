@@ -144,20 +144,51 @@ public class Tab1_2Contacts extends Fragment {
 
         accessTokenTracker.startTracking();
 
-        GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-            @Override
-            public void onCompleted(JSONObject object, GraphResponse response) {
-                try {
-                    String userID = object.getString("id");
-                    Log.d("userID", "************************"+userID);
-                    getFacebookContacts(userID);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        if(AccessToken.getCurrentAccessToken() == null){
+            loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    GraphRequest graphRequest = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            try {
+                                String userID = object.getString("id");
+                                getFacebookContacts(userID);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    graphRequest.executeAsync();
                 }
-            }
-        });
-        graphRequest.executeAsync();
 
+                @Override
+                public void onCancel() {
+                    // App code
+                }
+
+                @Override
+                public void onError(FacebookException exception) {
+                    // App code
+                }
+            });
+        }else {
+
+            GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                @Override
+                public void onCompleted(JSONObject object, GraphResponse response) {
+                    try {
+                        String userID = object.getString("id");
+                        Log.d("userID", "************************" + userID);
+                        getFacebookContacts(userID);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            graphRequest.executeAsync();
+        }
         return view;
     }
 
