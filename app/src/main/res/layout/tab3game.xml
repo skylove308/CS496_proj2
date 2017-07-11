@@ -6,24 +6,23 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.q.CS496_proj2.MainActivity$PlaceholderFragment">
+    android:paddingTop="@dimen/activity_vertical_margin">
 
-    <TextView
-        android:id="@+id/stageTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:text="SIMON!"
-        style="@style/TextAppearance.AppCompat.Large"/>
+    <!--<TextView-->
+    <!--android:id="@+id/stageTextView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textAlignment="center"-->
+    <!--android:layout_marginTop="10dp"-->
+    <!--android:layout_marginBottom="10dp"-->
+    <!--android:text="SIMON!"-->
+    <!--style="@style/TextAppearance.AppCompat.Large"/>-->
 
     <LinearLayout
+        android:id="@+id/gridViewLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:id="@+id/gridViewLinearLayout">
+        android:layout_marginBottom="10dp">
 
         <GridView
             android:id="@+id/gameGridView"
@@ -33,33 +32,31 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/btnArea"
+    <Button
+        android:id="@+id/startButton"
+        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="10dp">
+        android:text="PLAY" />
 
-        <Button
-            android:id="@+id/startButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="PLAY"
-            style="@style/Widget.AppCompat.Button.Colored"/>
+    <Button
+        android:id="@+id/showButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="HIGH SCORES" />
 
-        <Button
-            android:id="@+id/showButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="HIGH SCORES"/>
+    <Button
+        android:id="@+id/leaderButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="LEADERBOARD" />
 
-        <Button
-            android:id="@+id/readtxt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="RESET SCORES"
-            android:visibility="gone"/>
-
-    </LinearLayout>
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp" />
 
 </LinearLayout>

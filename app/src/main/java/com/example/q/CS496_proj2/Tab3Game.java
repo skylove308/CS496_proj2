@@ -1,8 +1,11 @@
 package com.example.q.CS496_proj2;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,17 +26,38 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class Tab3Game extends Fragment {
 
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    final String server = "http://52.79.200.191:3000";
     final private int duration = 500;
     private int currentIndex = 0;
     private int currentStage = 0;
@@ -45,8 +69,10 @@ public class Tab3Game extends Fragment {
     private Button button4;
 
     private List<Integer> answers = new ArrayList<Integer>();
-
     private ArrayList<String[]> scores = new ArrayList<String[]>();
+    private LoginButton loginButton;
+    private CallbackManager callbackManager;
+    private JSONObject userData;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,25 +87,66 @@ public class Tab3Game extends Fragment {
         /* listener for start button */
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
         Button showButton = (Button) rootView.findViewById(R.id.showButton);
-//        Button readtxt = rootView.findViewById(R.id.readtxt);
 
         startButton.setOnClickListener(startButtonListener);
         showButton.setOnClickListener(showButtonListener);
-//        readtxt.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                File dir = getContext().getFilesDir();
-//                File file = new File(dir, "scores.txt");
-//
-//                boolean result = file.delete();
-//
-//                scores.clear();
-//            }
-//        });
+
+        loginButton = (LoginButton) rootView.findViewById(R.id.login_button);
+        loginButton.setFragment(this);
+        loginButton.setReadPermissions(Arrays.asList("public_profile"));
+
+        if (AccessToken.getCurrentAccessToken() != null) {
+            GraphRequest request = GraphRequest.newMeRequest(
+                    AccessToken.getCurrentAccessToken(),
+                    new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            userData = object;
+                            Log.d("Already Logged In", response.toString());
+                        }
+                    });
+            request.executeAsync();
+        }
+
+        callbackManager = CallbackManager.Factory.create();
+        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                GraphRequest request = GraphRequest.newMeRequest(
+                        loginResult.getAccessToken(),
+                        new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(JSONObject object, GraphResponse response) {
+                                userData = object;
+                                Log.d("LoginActivity", response.toString());
+                            }
+                        });
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id, name, email");
+                request.setParameters(parameters);
+                request.executeAsync();
+            }
+
+            @Override
+            public void onCancel() {
+                Log.v("LoginActivity", "cancel");
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                Log.v("LoginActivity", exception.getCause().toString());
+            }
+        });
 
         loadRank();
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     public class GameGridViewAdapter extends BaseAdapter {
@@ -296,6 +363,7 @@ public class Tab3Game extends Fragment {
         stageTextView.setText("SIMON!");
         startButton.setVisibility(View.VISIBLE);
         showButton.setVisibility(View.VISIBLE);
+
 //        resetButton.setVisibility(View.VISIBLE);
 
     }
@@ -342,26 +410,21 @@ public class Tab3Game extends Fragment {
     }
 
     private void restartGame() {
-
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
         final Integer stageResult = currentStage;
 
-        final View dialogView = View.inflate(getContext(), R.layout.tab3dialog, null);
-        final EditText editName = (EditText) dialogView.findViewById(R.id.editName);
+        AddAsyncTask add = new AddAsyncTask(stageResult);
+        add.execute();
+
+        String message = (accessToken == null) ? "You must log in to save your score" : "Score uploaded!";
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        alertDialogBuilder.setTitle("Game Over!");
-        alertDialogBuilder.setMessage("You got to stage " + Integer.toString(currentStage));
-        alertDialogBuilder.setView(dialogView);
-        alertDialogBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String userName = editName.getText().toString();
-                addRank(userName, stageResult);
-            }
-        });
+        alertDialogBuilder.setTitle("Stage " + Integer.toString(stageResult) + ": Game Over!");
+        alertDialogBuilder.setMessage(message);
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+
         initGame();
     }
 
@@ -384,27 +447,65 @@ public class Tab3Game extends Fragment {
         }
     };
 
-    private void loadRank() {
+    public class AddAsyncTask extends AsyncTask<Integer, Integer, Integer> {
+        OkHttpClient httpClient = new OkHttpClient();
+        int score;
 
-        try {
-            final FileInputStream file = getContext().openFileInput("scores.txt");
-            byte[] txt = new byte[1000];
-            file.read(txt);
-            String str = new String(txt);
-            String[] tokens = str.split("\r\n");
-
-            scores.clear();
-
-            for (int i = 0; i < tokens.length; i++) {
-                if (tokens[i].contains("!v!r!")) {
-                    String[] tmpStr = tokens[i].split("!v!r!");
-                    scores.add(tmpStr);
-                }
-            }
-
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+        public AddAsyncTask(int s) {
+            this.score = s;
         }
+
+        @Override
+        protected Integer doInBackground(Integer... integers) {
+            try {
+
+                Log.d("doinbackground", (String) userData.get("id") + userData.get("name") + Integer.toString(score));
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("id", userData.get("id"));
+                jsonObject.put("name", userData.get("name"));
+                jsonObject.put("score", score);
+                String data = jsonObject.toString();
+
+                RequestBody requestBody = RequestBody.create(JSON, data);
+
+                Request request = new Request.Builder()
+                        .url(server + "/syncToGame")
+                        .post(requestBody)
+                        .build();
+
+                Response response = httpClient.newCall(request).execute();
+                Log.d("RANKASYNC", response.body().string());
+            } catch (Exception e) {
+                Log.e("rankAsyncTask", e.toString());
+            }
+            return 0;
+        }
+    }
+
+    private void loadRank() {
+//        RankAsyncTask rat = new RankAsyncTask();
+//        rat.execute();
+
+
+//        try {
+//            final FileInputStream file = getContext().openFileInput("scores.txt");
+//            byte[] txt = new byte[1000];
+//            file.read(txt);
+//            String str = new String(txt);
+//            String[] tokens = str.split("\r\n");
+//
+//            scores.clear();
+//
+//            for (int i = 0; i < tokens.length; i++) {
+//                if (tokens[i].contains("!v!r!")) {
+//                    String[] tmpStr = tokens[i].split("!v!r!");
+//                    scores.add(tmpStr);
+//                }
+//            }
+//
+//        } catch (IOException ioe) {
+//            ioe.printStackTrace();
+//        }
 
     }
 

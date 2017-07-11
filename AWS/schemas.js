@@ -16,5 +16,12 @@ var userSchema = new Schema ({
 	]
 });
 
+var gameSchema = new Schema ({
+	id: String,
+	name: String,
+	scores: [ {score: Number }]
+});
+
 exports.tmpSchema = tmpSchema;
 exports.userSchema = userSchema;
+exports.gameSchema = gameSchema;

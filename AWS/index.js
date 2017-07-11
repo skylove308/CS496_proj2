@@ -2,7 +2,9 @@ var mongoose = require('mongoose');
 var schemas = require('./schemas');
 var bodyParser = require('body-parser');
 var express = require('express');
+var multer  = require('multer')
 
+var upload = multer();
 var app = express();
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
@@ -10,7 +12,7 @@ app.use(bodyParser.json());
 mongoose.connect("mongodb://localhost:27017/mydb");
 
 var UserModel = mongoose.model('user', schemas.userSchema);
-
+var GameModel = mongoose.model('game', schemas.gameSchema);
 
 app.get('/', (req, res) => {
 	res.send("GET");
@@ -157,7 +159,7 @@ app.post('/syncGallery', (req, res) => {
 	});
 });
 
-app.post('/addGallery', (req, res) => {
+app.post('/addGallery', upload.array(), function (req, res, next) {
 	var id = req.body.id;
 	var photo_id = req.body.photo_id;
 	var bitmap = req.body.bitmap;
@@ -170,10 +172,10 @@ app.post('/addGallery', (req, res) => {
 		console.log("inserted!");
 	});
 
-	res.send("");
+	res.send("addGallery");
 });
 
-app.post('/deleteGallery', (req, res) => {
+app.post('/deleteGallery', upload.array(), function (req, res, next) {
 	var id = req.body.id;
 	var photo_id = req.body.photo_id;
 	var bitmap = req.body.bitmap;
@@ -186,8 +188,36 @@ app.post('/deleteGallery', (req, res) => {
 		console.log("deleted ");
 	});
 
-	res.send("");
+	res.send("deleteGallery");
 });
 
+app.post('/syncToGame', function (req, res) {
+	var id = req.body.id;
+	var name = req.body.name;
+	var score = req.body.score;
+	console.log("game " + id + " " + name + " " + score);
+	var scoreItem = {score: score};
+	var condition = {id: id};
+
+	GameModel.find(condition, function (err, data) {
+		if (data.length == 0) {
+			GameModel.collection.insert({id: id, name: name}, function (err, newdata) {
+				GameModel.collection.update(condition, {"$push": {"scores": scoreItem }}, function(err, result) {
+					if (err) throw err;
+					console.log("score uploaded!");
+				});
+			});
+		} else {
+			GameModel.collection.update(condition, {"$push": {"scores": scoreItem }}, function(err, result) {
+				if (err) throw err;
+				console.log("score uploaded!");
+			});
+		}
+	});
+
+	res.send("syncToGame");
+});
+
+//todo insert player in loadrank
 
 app.listen(3000, () => console.log('Server running on port 3000'));
