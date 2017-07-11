@@ -3,21 +3,30 @@
 
     <item
         is-multidex="true"
-        jar="C:\Users\q\AndroidStudioProjects\CS496_proj2\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jar="C:\Users\q\.android\build-cache\689ce8184214de8ccf7729558bbe3c36a0cf9c58\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="26.0.0"
+        sha1="81aa0e8e77d948204aa6754019c6f3c04dd922e3">
+        <dex dex="C:\Users\q\AndroidStudioProjects\Project1\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_1fef2306b961539f1fcda3b3c6f729dd3fe9730c\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\q\AndroidStudioProjects\Project1\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
         jumboMode="true"
         optimize="true"
         revision="26.0.0"
         sha1="3be78ebc2706b2e1fe2f12d5726887a92d6c183b">
-        <dex dex="C:\Users\q\AndroidStudioProjects\CS496_proj2\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run_33286612a55d46031358862f68a8271a6ed96284\classes.dex" />
+        <dex dex="C:\Users\q\AndroidStudioProjects\Project1\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run_e8b35936b8d72e1f77ef4f4d804195b490b217f1\classes.dex" />
     </item>
     <item
         is-multidex="true"
-        jar="C:\Users\q\AndroidStudioProjects\CS496_proj2\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jar="C:\Users\q\AndroidStudioProjects\Project1\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
         jumboMode="true"
         optimize="true"
         revision="26.0.0"
-        sha1="7172ea01185bd47f47569974c733e8eed4e6a129">
-        <dex dex="C:\Users\q\AndroidStudioProjects\CS496_proj2\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run-bootstrap_34199fc6e97cdf5ba38c577eaf5d354a0f87fb56\classes.dex" />
+        sha1="2732c96a8e07e6a0f64a6f91988870108499c1c8">
+        <dex dex="C:\Users\q\AndroidStudioProjects\Project1\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run-bootstrap_576a3cf9c6540300ddd3e6555919da6ceebfb154\classes.dex" />
     </item>
 
 </items>
