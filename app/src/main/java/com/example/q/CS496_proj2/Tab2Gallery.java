@@ -58,6 +58,8 @@ import okhttp3.Response;
 import static android.app.Activity.RESULT_OK;
 import static com.example.q.CS496_proj2.R.id.galleryGridView;
 
+
+
 public class Tab2Gallery extends Fragment {
 
     final String server = "http://52.79.200.191:3000";
@@ -136,6 +138,7 @@ public class Tab2Gallery extends Fragment {
             cursor.moveToFirst();
             String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
             cursor.close();
+
 
             final Bitmap tmp_image = BitmapFactory.decodeFile(imagePath);
             final String photo_id = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
