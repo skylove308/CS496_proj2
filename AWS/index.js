@@ -196,26 +196,36 @@ app.post('/syncToGame', function (req, res) {
 	var name = req.body.name;
 	var score = req.body.score;
 	console.log("game " + id + " " + name + " " + score);
-	var scoreItem = {score: score};
-	var condition = {id: id};
+	var item = {id: id, name: name, score: score};
 
-	GameModel.find(condition, function (err, data) {
-		if (data.length == 0) {
-			GameModel.collection.insert({id: id, name: name}, function (err, newdata) {
-				GameModel.collection.update(condition, {"$push": {"scores": scoreItem }}, function(err, result) {
-					if (err) throw err;
-					console.log("score uploaded!");
-				});
-			});
-		} else {
-			GameModel.collection.update(condition, {"$push": {"scores": scoreItem }}, function(err, result) {
-				if (err) throw err;
-				console.log("score uploaded!");
-			});
-		}
+	GameModel.collection.insert(item, function(err, result) {
+		if (err) throw err;
+		console.log("score uploaded!");
 	});
 
 	res.send("syncToGame");
+});
+
+app.post('/syncFromGame', function (req, res) {
+	var id = req.body.id;
+	var name = req.body.name;
+	var score = req.body.score;
+	console.log("game " + id + " " + name + " " + score);
+	var condition = {id: id};
+
+	GameModel.find(condition, [], {limit: 10}, function (err, data) {
+		if (err) throw err;
+		console.log(data);
+		res.send(data);
+	});
+});
+
+app.get('/leader', function (req, res) {
+	GameModel.find({}, [], {sort: {score: -1}, limit: 10}, function (err, data) {
+		if (err) throw err;
+		console.log(data);
+		res.send(data);
+	});
 });
 
 //todo insert player in loadrank

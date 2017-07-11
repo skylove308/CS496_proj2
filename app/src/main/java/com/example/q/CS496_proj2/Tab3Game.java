@@ -35,8 +35,10 @@ import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -73,10 +75,25 @@ public class Tab3Game extends Fragment {
     private LoginButton loginButton;
     private CallbackManager callbackManager;
     private JSONObject userData;
+    private View rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.tab3game, container, false);
+        rootView = inflater.inflate(R.layout.tab3game, container, false);
+
+        if (AccessToken.getCurrentAccessToken() != null) {
+            GraphRequest request = GraphRequest.newMeRequest(
+                    AccessToken.getCurrentAccessToken(),
+                    new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            userData = object;
+                            loadRank();
+                            Log.d("Already Logged In", response.toString());
+                        }
+                    });
+            request.executeAsync();
+        }
 
         GridView gv = (GridView) rootView.findViewById(R.id.gameGridView);
         GameGridViewAdapter gAdapter = new GameGridViewAdapter(getContext());
@@ -87,26 +104,15 @@ public class Tab3Game extends Fragment {
         /* listener for start button */
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
         Button showButton = (Button) rootView.findViewById(R.id.showButton);
+        Button leaderButton = (Button) rootView.findViewById(R.id.leaderButton);
 
         startButton.setOnClickListener(startButtonListener);
         showButton.setOnClickListener(showButtonListener);
+        leaderButton.setOnClickListener(leaderButtonListener);
 
         loginButton = (LoginButton) rootView.findViewById(R.id.login_button);
         loginButton.setFragment(this);
         loginButton.setReadPermissions(Arrays.asList("public_profile"));
-
-        if (AccessToken.getCurrentAccessToken() != null) {
-            GraphRequest request = GraphRequest.newMeRequest(
-                    AccessToken.getCurrentAccessToken(),
-                    new GraphRequest.GraphJSONObjectCallback() {
-                        @Override
-                        public void onCompleted(JSONObject object, GraphResponse response) {
-                            userData = object;
-                            Log.d("Already Logged In", response.toString());
-                        }
-                    });
-            request.executeAsync();
-        }
 
         callbackManager = CallbackManager.Factory.create();
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -118,6 +124,7 @@ public class Tab3Game extends Fragment {
                             @Override
                             public void onCompleted(JSONObject object, GraphResponse response) {
                                 userData = object;
+                                loadRank();
                                 Log.d("LoginActivity", response.toString());
                             }
                         });
@@ -137,8 +144,6 @@ public class Tab3Game extends Fragment {
                 Log.v("LoginActivity", exception.getCause().toString());
             }
         });
-
-        loadRank();
 
         return rootView;
     }
@@ -359,23 +364,27 @@ public class Tab3Game extends Fragment {
         TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
         Button startButton = (Button) getActivity().findViewById(R.id.startButton);
         Button showButton = (Button) getActivity().findViewById(R.id.showButton);
-//        Button resetButton = getActivity().findViewById(R.id.readtxt);
-        stageTextView.setText("SIMON!");
+        Button leaderButton = (Button) getActivity().findViewById(R.id.leaderButton);
+        Button loginButton = (Button) getActivity().findViewById(R.id.login_button);
         startButton.setVisibility(View.VISIBLE);
         showButton.setVisibility(View.VISIBLE);
-
-//        resetButton.setVisibility(View.VISIBLE);
-
+        leaderButton.setVisibility(View.VISIBLE);
+        loginButton.setVisibility(View.VISIBLE);
+        stageTextView.setVisibility(View.GONE);
     }
 
     private void startGame() {
         Button startButton = (Button) getActivity().findViewById(R.id.startButton);
         Button showButton = (Button) getActivity().findViewById(R.id.showButton);
-//        Button resetButton = getActivity().findViewById(R.id.readtxt);
+        Button leaderButton = (Button) getActivity().findViewById(R.id.leaderButton);
+        Button loginButton = (Button) getActivity().findViewById(R.id.login_button);
+        TextView stageTextView = (TextView) getActivity().findViewById(R.id.stageTextView);
         startButton.setVisibility(View.GONE);
         showButton.setVisibility(View.GONE);
-//        resetButton.setVisibility(View.GONE);
+        leaderButton.setVisibility(View.GONE);
+        loginButton.setVisibility(View.GONE);
         stageTextView.setText("STAGE " + Integer.toString(currentStage));
+        stageTextView.setVisibility(View.VISIBLE);
 
         Random random = new Random();
         for (int i = 0; i < 2; i++) {
@@ -413,8 +422,14 @@ public class Tab3Game extends Fragment {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         final Integer stageResult = currentStage;
 
-        AddAsyncTask add = new AddAsyncTask(stageResult);
+        AddAsyncTask add = new AddAsyncTask(stageResult, 0);
         add.execute();
+
+        try {
+            addRank((String) userData.get("name"), stageResult);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         String message = (accessToken == null) ? "You must log in to save your score" : "Score uploaded!";
 
@@ -442,24 +457,36 @@ public class Tab3Game extends Fragment {
     View.OnClickListener showButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            sortList();
-            showRank();
+            if (AccessToken.getCurrentAccessToken() != null) {
+                sortList();
+                showRank();
+            } else {
+                Toast.makeText(getActivity(), "You must log in to view your scores", Toast.LENGTH_LONG).show();
+            }
+        }
+    };
+
+    View.OnClickListener leaderButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            LeaderAsyncTask lat = new LeaderAsyncTask();
+            lat.execute();
         }
     };
 
     public class AddAsyncTask extends AsyncTask<Integer, Integer, Integer> {
         OkHttpClient httpClient = new OkHttpClient();
         int score;
+        int route;
 
-        public AddAsyncTask(int s) {
+        public AddAsyncTask(int s, int route) {
             this.score = s;
+            this.route = route;
         }
 
         @Override
         protected Integer doInBackground(Integer... integers) {
             try {
-
-                Log.d("doinbackground", (String) userData.get("id") + userData.get("name") + Integer.toString(score));
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("id", userData.get("id"));
                 jsonObject.put("name", userData.get("name"));
@@ -467,14 +494,27 @@ public class Tab3Game extends Fragment {
                 String data = jsonObject.toString();
 
                 RequestBody requestBody = RequestBody.create(JSON, data);
+                String router = route == 0 ? "/syncToGame" : "/syncFromGame";
 
                 Request request = new Request.Builder()
-                        .url(server + "/syncToGame")
+                        .url(server + router)
                         .post(requestBody)
                         .build();
 
                 Response response = httpClient.newCall(request).execute();
-                Log.d("RANKASYNC", response.body().string());
+                String stringResponse = response.body().string();
+                Log.d("RANKASYNC", stringResponse);
+
+                if (route == 1) {
+                    JSONArray array = new JSONArray(stringResponse);
+                    for (int i = 0; i < array.length(); i++) {
+                        int score = (int) ((JSONObject) array.get(i)).get("score");
+                        String name = (String) userData.get("name");
+                        Log.d("LOOPING", name + " " + Integer.toString(score));
+                        String[] item = new String[]{name, Integer.toString(score)};
+                        scores.add(item);
+                    }
+                }
             } catch (Exception e) {
                 Log.e("rankAsyncTask", e.toString());
             }
@@ -482,37 +522,78 @@ public class Tab3Game extends Fragment {
         }
     }
 
+    public class LeaderAsyncTask extends AsyncTask<Integer, Integer, Integer> {
+        private AlertDialog dialog = new AlertDialog.Builder(getContext()).setMessage("Loading Scores...").create();
+        OkHttpClient httpClient = new OkHttpClient();
+        ArrayList<String[]> leaders = new ArrayList<>();
+
+        @Override
+        protected void onPreExecute() {
+            dialog.show();
+        }
+
+        @Override
+        protected Integer doInBackground(Integer... integers) {
+            try {
+                Request request = new Request.Builder()
+                        .url(server + "/leader")
+                        .get()
+                        .build();
+
+                Response response = httpClient.newCall(request).execute();
+                String stringResponse = response.body().string();
+                Log.d("Leader", stringResponse);
+
+                JSONArray array = new JSONArray(stringResponse);
+                for (int i = 0; i < array.length(); i++) {
+                    int score = (int) ((JSONObject) array.get(i)).get("score");
+                    String name = (String) ((JSONObject) array.get(i)).get("name");
+                    Log.d("LOOPING", name + " " + Integer.toString(score));
+                    String[] item = new String[]{name, Integer.toString(score)};
+                    leaders.add(item);
+                }
+
+            } catch (Exception e) {
+                Log.e("rankAsyncTask", e.toString());
+            }
+            return 0;
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            dialog.dismiss();
+            final View rankView = View.inflate(getContext(), R.layout.tab3rank, null);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+            alertDialogBuilder.setTitle("Leaderboard");
+            alertDialogBuilder.setView(rankView);
+
+            ListView scoreListView = (ListView) rankView.findViewById(R.id.rankListView);
+            mAdapter adapter = new mAdapter(getContext(), leaders);
+            adapter.notifyDataSetChanged();
+            scoreListView.setAdapter(adapter);
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
+    }
+
     private void loadRank() {
-//        RankAsyncTask rat = new RankAsyncTask();
-//        rat.execute();
-
-
-//        try {
-//            final FileInputStream file = getContext().openFileInput("scores.txt");
-//            byte[] txt = new byte[1000];
-//            file.read(txt);
-//            String str = new String(txt);
-//            String[] tokens = str.split("\r\n");
-//
-//            scores.clear();
-//
-//            for (int i = 0; i < tokens.length; i++) {
-//                if (tokens[i].contains("!v!r!")) {
-//                    String[] tmpStr = tokens[i].split("!v!r!");
-//                    scores.add(tmpStr);
-//                }
-//            }
-//
-//        } catch (IOException ioe) {
-//            ioe.printStackTrace();
-//        }
-
+        Log.d("ASDF", "loadrankd");
+        scores.clear();
+        AddAsyncTask add = new AddAsyncTask(0, 1);
+        add.execute();
     }
 
     private void sortList() {
         Collections.sort(scores, new Comparator<String[]>() {
             public int compare(String[] two, String[] one) {
-                return one[1].compareTo(two[1]);
+                if (Integer.parseInt(one[1]) > Integer.parseInt(two[1])) {
+                    return 1;
+                } else if (Integer.parseInt(one[1]) == Integer.parseInt(two[1])) {
+                    return 0;
+                } else {
+                    return -1;
+                }
             }
         });
     }
@@ -525,9 +606,6 @@ public class Tab3Game extends Fragment {
         alertDialogBuilder.setView(rankView);
 
         ListView scoreListView = (ListView) rankView.findViewById(R.id.rankListView);
-        if (scores.size() == 0) {
-            loadRank();
-        }
         mAdapter adapter = new mAdapter(getContext(), scores);
         adapter.notifyDataSetChanged();
         scoreListView.setAdapter(adapter);
@@ -567,23 +645,7 @@ public class Tab3Game extends Fragment {
     private void addRank(String userName, Integer currentStage) {
         String[] currentScore = new String[2];
         currentScore[0] = userName;
-        if (currentScore[0].equals("")) {
-            currentScore[0] = "Anonymous";
-        }
         currentScore[1] = String.valueOf(currentStage);
         scores.add(currentScore);
-        String newLine = currentScore[0] + "!v!r!" + currentScore[1] + "\r\n";
-
-        try {
-
-            FileOutputStream file = getContext().openFileOutput("scores.txt", Context.MODE_APPEND);
-            file.write(newLine.getBytes());
-            file.close();
-
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-
-
     }
 }
