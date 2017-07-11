@@ -70,9 +70,6 @@ public class Tab1_2Contacts extends Fragment {
     private Context context;
     LoginButton loginButton;
     AccessToken accesstoken = AccessToken.getCurrentAccessToken();
-    URL myFileUrl;
-    Bitmap bmImg;
-    HashMap<String, Object> friend;
 
     public Tab1_2Contacts() {
         // Required empty public constructor
@@ -83,25 +80,6 @@ public class Tab1_2Contacts extends Fragment {
 
         callbackManager = CallbackManager.Factory.create();
 
-
-        if (accesstoken != null) {
-
-            GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-                @Override
-                public void onCompleted(JSONObject object, GraphResponse response) {
-                    try {
-                        String userID = object.getString("id");
-                        Log.d("userID", "************************"+userID);
-                        getFacebookContacts(userID);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            graphRequest.executeAsync();
-        } else {
-
-        }
     }
 
 
@@ -118,11 +96,9 @@ public class Tab1_2Contacts extends Fragment {
         loginButton.setReadPermissions(Arrays.asList("public_profile", "user_friends", "email"));
         // If using in a fragment
         loginButton.setFragment(this);
-        // Other app specific specialization
 
         // Callback registration
 
-        Profile FacebookProfile = Profile.getCurrentProfile();
         AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
@@ -133,11 +109,6 @@ public class Tab1_2Contacts extends Fragment {
                     listview.setAdapter(facebooklist);
                     facebooklist.notifyDataSetChanged();
                     Log.d("clear?", "*****************************************************************");
-                }
-            }
-        };
-        if(FacebookProfile == null){
-            Log.d("Not Login", "*****************************************************");
 
                     loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                         @Override
@@ -159,7 +130,6 @@ public class Tab1_2Contacts extends Fragment {
                         @Override
                         public void onCancel() {
                             // App code
-
                         }
 
                         @Override
@@ -167,14 +137,26 @@ public class Tab1_2Contacts extends Fragment {
                             // App code
                         }
                     });
-
-                } else{
-            Log.d("Login", "***********************************");
-            new PostFacebookContacts().execute();
-        }
+                }
+            }
+        };
+        Log.d("Login", "***********************************");
 
         accessTokenTracker.startTracking();
-        Log.d("Wrong!!", "****************************");
+
+        GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+            @Override
+            public void onCompleted(JSONObject object, GraphResponse response) {
+                try {
+                    String userID = object.getString("id");
+                    Log.d("userID", "************************"+userID);
+                    getFacebookContacts(userID);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        graphRequest.executeAsync();
 
         return view;
     }
@@ -213,38 +195,15 @@ public class Tab1_2Contacts extends Fragment {
                                         map2.put("picture", data[1]);
                                         facebook.add(map1);
                                         facebook.add(map2);
-
-
                                     }
                                     Log.d("name", "*****************************" + facebook);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
-                                new PostFacebookContacts().execute();
+                                facebooklist = new FacebookViewAdapter(facebookName, facebookPicture);
+                                listview.setAdapter(facebooklist);
                             }
                         }
                 ).executeAsync();
             }
-
-
-
-    public class PostFacebookContacts extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... none) {
-            return null;
-
-        }
-
-        protected void onPostExecute(Void none){
-            facebooklist = new FacebookViewAdapter(facebookName, facebookPicture);
-            listview.setAdapter(facebooklist);
-        }
-    }
 }
-
