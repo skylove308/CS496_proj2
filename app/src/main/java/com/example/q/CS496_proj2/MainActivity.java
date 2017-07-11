@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return "CONTACTS";
                 case 1:
-                    return "CONTACTS_2";
+                    return "FRIENDS";
                 case 2:
                     return "GALLERY";
                 case 3:
