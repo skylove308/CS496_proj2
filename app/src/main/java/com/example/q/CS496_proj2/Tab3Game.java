@@ -1,8 +1,6 @@
 package com.example.q.CS496_proj2;
 
-
 import android.content.Context;
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
