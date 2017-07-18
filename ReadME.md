@@ -7,25 +7,6 @@
 ## Project Name: Simon Plus
 ### Team Members: [Chan Ryu](https://github.com/chandescartes),[KyeongTaek Lee](https://github.com/skylove308)
 
-### [English]
-
-#### Tab A [Contacts]
-- Automatically gets contacts from phone and displays them
-- Add a contact using the floating action button
-- Edit and call a contact by clicking a contact
-- All changes are reflected by the phone's contacts
-
-#### Tab B [Gallery]
-- Add a photo from the device's gallery by using the floating action button
-- Control the number of photos displayed in one row using the seek bar at the bottom
-- Show or delete a photo by clicking a photo
-- Deleting a photo does not delete it from the phone
-
-#### Tab C [Game]
-- An implementation of the [Simon game](https://www.hasbro.com/common/instruct/Simon.PDF)
-- Game ends upon clicking an incorrect sequence
-- Enter name to save highscore
-- HIGH SCORES button displays high scores
 
 ### [한국어]
 
