@@ -1,14 +1,7 @@
 # [CS496_Week2]
 ## Project Name: Simon Plus
 ### Team: 류찬영, 이경택
-
-#### Tab A [Contact]
-# [CS496-Week-2]
-## Project Name: Simon Plus
 ### Team Members: [Chan Ryu](https://github.com/chandescartes),[KyeongTaek Lee](https://github.com/skylove308)
-
-
-### [한국어]
 
 #### Tab A [Contacts]
 - 연락처에서 목록을 받아와 바로 보여줍니다.
